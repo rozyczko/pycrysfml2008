@@ -1,5 +1,5 @@
 @echo off
-rem-------------------------------------------------------------
+rem -------------------------------------------------------------
 rem PyCrysFML08
 rem -------------------------------------------------------------
 rem This file is part of PyCrysFML08
@@ -35,6 +35,7 @@ rem -------------------------------------------------------------
 ifort /c /fpp %FORPY%\forpy_mod.f90
 ifort /c /fpp ..\..\src\wraps_cfml_atoms.f90 /I%CRYSFML08_INSTALL%\include
 ifort /c /fpp ..\..\src\wraps_cfml_metrics.f90 /I%CRYSFML08_INSTALL%\include
+ifort /c /fpp ..\..\src\py_cfml_sxtal_geom.f90 /I%CRYSFML08_INSTALL%\include
 ifort /c /fpp ..\..\src\py_extension_cfml_messages.f90 /I%CRYSFML08_INSTALL%\include
 ifort /c /fpp ..\..\src\py_extension_cfml_ioform.f90 /I%CRYSFML08_INSTALL%\include
 ifort /c /fpp ..\..\src\py_extension_cfml_sxtal_geom.f90 /I%CRYSFML08_INSTALL%\include

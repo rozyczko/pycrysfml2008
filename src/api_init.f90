@@ -36,6 +36,7 @@ module api_init
 
     use forpy_mod
     use iso_c_binding
+    use py_cfml_sxtal_geom
     use extension_cfml_ioform
     use extension_cfml_sxtal_geom
 
@@ -70,7 +71,10 @@ module api_init
         ierror = Forpy_Initialize()
 
         ! Build method table
-        call method_Table%init(2)
+        call method_Table%init(3)
+        call method_Table%add_method("z1frmd",&
+            "z1frmd",METH_VARARGS,&
+            c_funloc(py_z1frmd))
         call method_Table%add_method("xtal_structure_from_file",&
             "py_xtal_structure_from_file",METH_VARARGS,&
             c_funloc(py_xtal_structure_from_file))
