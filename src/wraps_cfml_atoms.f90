@@ -38,6 +38,7 @@ module wraps_cfml_atoms
     ! Internal procedures
     ! -------------------
     ! subroutine wrap_atm_type(for_var,dic_var,ierror)
+    ! subroutine wrap_atm_type(for_var,dic_var,ierror)
     ! subroutine wrap_atlist_type(for_var,dic_var,ierror)
     !>
 
@@ -90,14 +91,14 @@ module wraps_cfml_atoms
     subroutine wrap_atlist_type(for_var,dic_var,ierror)
 
         ! Arguments
-        class(atlist_type), intent(in)    :: for_var
+        type(atlist_type),  intent(in)    :: for_var
         type(dict),         intent(inout) :: dic_var
         integer,            intent(out)   :: ierror
 
         ! Local variables
         integer :: i
         type(ndarray) :: nd_active,nd_iph
-        type(dict) :: di_atom
+        type(dict), dimension(:), allocatable :: di_atom
         type(list) :: li_atom,li_active
 
         ierror = 0
@@ -112,14 +113,12 @@ module wraps_cfml_atoms
         if (ierror == 0) ierror = ndarray_create(nd_iph,for_var%iph)
         if (ierror == 0) ierror = dic_var%setitem('iph',nd_iph)
         if (ierror == 0) ierror = list_create(li_atom)
-        select type (A => for_var%atom)
-            type is (atm_type)
-                ierror = dict_create(di_atom)
-                do i = 1 , size(for_var%atom)
-                    if (ierror == 0) call wrap_atm_type(for_var%atom(i),di_atom,ierror)
-                    if (ierror == 0) ierror = li_atom%append(di_atom)
-                end do
-        end select
+        if (ierror == 0) allocate(di_atom(for_var%natoms))
+        do i = 1 , for_var%natoms
+            ierror = dict_create(di_atom(i))
+            if (ierror == 0) call wrap_atm_type(for_var%atom(i),di_atom(i),ierror)
+            if (ierror == 0) ierror = li_atom%append(di_atom(i))
+        end do
         if (ierror == 0) ierror = dic_var%setitem('atom',li_atom)
 
     end subroutine wrap_atlist_type

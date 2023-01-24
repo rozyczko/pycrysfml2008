@@ -108,7 +108,7 @@ module extension_cfml_ioform
 
         ! Wrap
         if (ierror == 0) ierror = dict_create(di_cell)
-        if (ierror == 0) call wrap_cell_g_type(cell,di_cell,ierror)
+        if (ierror == 0) call wrap_cell_type(cell,di_cell,ierror)
         if (ierror == 0) ierror = dict_create(di_asu)
         if (ierror == 0) call wrap_atlist_type(asu,di_asu,ierror)
 
