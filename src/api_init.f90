@@ -39,6 +39,7 @@ module api_init
     use py_cfml_sxtal_geom
     use extension_cfml_ioform
     use extension_cfml_sxtal_geom
+    use extension_cfml_diffpatt
 
     implicit none
 
@@ -71,7 +72,7 @@ module api_init
         ierror = Forpy_Initialize()
 
         ! Build method table
-        call method_Table%init(3)
+        call method_Table%init(4)
         call method_Table%add_method("z1frmd",&
             "z1frmd",METH_VARARGS,&
             c_funloc(py_z1frmd))
@@ -81,6 +82,10 @@ module api_init
         call method_Table%add_method("ganu_from_xz",&
             "py_ganu_from_xz",METH_VARARGS,&
             c_funloc(py_ganu_from_xz))
+        call method_Table%add_method("diffpatt_sim",&
+            "py_diffpatt_sim",METH_VARARGS,&
+            c_funloc(py_diffpatt_sim))
+
 
         ! Build mod_Def
         m = mod_Def%init("pycrysfml08","A Python API for CrysFML08",method_Table)
