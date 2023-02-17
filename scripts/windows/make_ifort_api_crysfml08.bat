@@ -39,6 +39,7 @@ ifort /c /fpp ..\..\src\py_cfml_sxtal_geom.f90 /I%CRYSFML08_INSTALL%\include
 ifort /c /fpp ..\..\src\py_extension_cfml_messages.f90 /I%CRYSFML08_INSTALL%\include
 ifort /c /fpp ..\..\src\py_extension_cfml_ioform.f90 /I%CRYSFML08_INSTALL%\include
 ifort /c /fpp ..\..\src\py_extension_cfml_sxtal_geom.f90 /I%CRYSFML08_INSTALL%\include
+ifort /c /fpp ..\..\src\py_extension_cfml_diffpatt.f90 /I%CRYSFML08_INSTALL%\include
 ifort /c /fpp ..\..\src\api_init.f90 /I%CRYSFML08_INSTALL%\include
 link *.obj /out:"pycrysfml08.dll" /libpath:%CRYSFML08_INSTALL%\lib /dll %LIBPYTHON% libCrysFML08.a
 if not exist ..\..\dll (
