@@ -104,27 +104,43 @@ module extension_cfml_ioform
 
         ! Get the orbits for each atom
         if (ierror == 0) ierror = list_create(li_orb)
-        if (ierror == 0) call get_orbits_cartesian(cell,asu,spg,li_orb,ierror)
+        if (ierror == 0) then
+            call get_orbits_cartesian(cell,asu,spg,li_orb,ierror)
+            if (ierror /= 0) then
+                ierror = EXCEPTION_ERROR
+                call raise_exception(RuntimeError,'xtal_structure_from_file: Error getting orbits')
+            end if
+        end if
 
-        ! Wrap
+        ! Wraps
         if (ierror == 0) ierror = dict_create(di_cell)
-        if (ierror == 0) call wrap_cell_type(cell,di_cell,ierror)
+        if (ierror == 0) then
+            call wrap_cell_type(cell,di_cell,ierror)
+            if (ierror /= 0) then
+                ierror = EXCEPTION_ERROR
+                call raise_exception(RuntimeError,'xtal_structure_from_file: Error wrapping cell')
+            end if
+        end if
         if (ierror == 0) ierror = dict_create(di_asu)
-        if (ierror == 0) call wrap_atlist_type(asu,di_asu,ierror)
-
+        if (ierror == 0) then
+            call wrap_atlist_type(asu,di_asu,ierror)
+            if (ierror /= 0) then
+                ierror = EXCEPTION_ERROR
+                call raise_exception(RuntimeError,'xtal_structure_from_file: Error wrapping atlist')
+            end if
+        end if
         ! Return tuple
         if (ierror == 0) then
-            ierror = tuple_create(ret,3)
-            if (ierror == 0) ierror = ret%setitem(0,di_cell)
-            if (ierror == 0) ierror = ret%setitem(1,di_asu)
-            if (ierror == 0) ierror = ret%setitem(2,li_orb)
-        end if
-        if (ierror == 0) then
-            resul = ret%get_c_ptr()
+            ierror = tuple_create(ret,4)
+            ierror = ret%setitem(0,0)
+            ierror = ret%setitem(1,di_cell)
+            ierror = ret%setitem(2,di_asu)
+            ierror = ret%setitem(3,li_orb)
         else
-            ierror = nonetype_create(nret)
-            resul = nret%get_c_ptr()
+            ierror = tuple_create(ret,1)
+            ierror = ret%setitem(0,1)
         end if
+        resul = ret%get_c_ptr()
 
     end function py_xtal_structure_from_file
 
