@@ -42,7 +42,7 @@ module extension_cfml_sxtal_geom
     ! -------------------
     ! Internal procedures
     ! -------------------
-    ! psd_convert_new(diffractometer,f_virtual,conversion_type,ga_D,nu_D,px,pz,x_D,z_D,ga_P,nu_P,ierr)
+    ! psd_convert_new(diffractometer,conversion_type,ga_D,nu_D,px,pz,x_D,z_D,ga_P,nu_P,ierr)
     !>
 
     use forpy_mod
@@ -67,7 +67,7 @@ module extension_cfml_sxtal_geom
 
         ! Local variables
         integer :: ierror,ierr
-        integer :: ipsd,np_horiz,np_vert,f_virtual
+        integer :: ipsd,np_horiz,np_vert
         integer, dimension(:), pointer :: p_npix
         real :: px,pz,ga_D,nu_D,x_D,z_D,cgap,agap,dist_samp_detector,ga_P,nu_P
         real, dimension(3) :: det_offsets
@@ -107,8 +107,6 @@ module extension_cfml_sxtal_geom
         if (ierror == 0) ierror = nd_det_offsets%get_data(p_det_offsets)
         if (ierror == 0) ierror = args%getitem(item,9)
         if (ierror == 0) ierror = cast(data_ordering,item)
-        if (ierror == 0) ierror = args%getitem(item,10)
-        if (ierror == 0) ierror = cast(f_virtual,item)
         if (ierror /= 0) then
             ierror = EXCEPTION_ERROR
             call raise_exception(RuntimeError,'py_ganu_from_xz: Error getting arguments')
@@ -127,7 +125,7 @@ module extension_cfml_sxtal_geom
         end if
 
         ! Compute ga_P and nu_P
-        if (ierror == 0) call psd_convert_new(diffractometer,f_virtual,0,ga_D,nu_D,px,pz,x_D,z_D,ga_P,nu_P,ierr)
+        if (ierror == 0) call psd_convert_new(diffractometer,0,ga_D,nu_D,px,pz,x_D,z_D,ga_P,nu_P,ierr)
         call check_error('py_ganu_from_xz',ierror)
 
         ! Return tuple
@@ -145,7 +143,7 @@ module extension_cfml_sxtal_geom
 
     end function py_ganu_from_xz
 
-    subroutine psd_convert_new(diffractometer,f_virtual,conversion_type,ga_D,nu_D,px,pz,x_D,z_D,ga_P,nu_P,ierr)
+    subroutine psd_convert_new(diffractometer,conversion_type,ga_D,nu_D,px,pz,x_D,z_D,ga_P,nu_P,ierr)
 
         ! Pixel numbering start by zero
         !
@@ -161,7 +159,6 @@ module extension_cfml_sxtal_geom
 
         ! Arguments
         type(diffractometer_type), intent(inout) :: diffractometer
-        integer,                   intent(in)    :: f_virtual
         integer,                   intent(in)    :: conversion_type
         real,                      intent(in)    :: ga_D
         real,                      intent(in)    :: nu_D
@@ -178,8 +175,8 @@ module extension_cfml_sxtal_geom
         real :: px_mid,pz_mid,radius,y_D,x_L,y_L,z_L,px_,pz_
 
         ierr = 0
-        diffractometer%np_horiz = diffractometer%np_horiz * f_virtual
-        diffractometer%cgap = diffractometer%cgap / f_virtual
+        diffractometer%np_horiz = diffractometer%np_horiz
+        diffractometer%cgap = diffractometer%cgap
         px_mid = diffractometer%np_horiz / 2.0
         pz_mid = diffractometer%np_vert / 2.0
         px_ = px
@@ -253,8 +250,8 @@ module extension_cfml_sxtal_geom
         end if
 
         ! Restore original values
-        diffractometer%np_horiz = diffractometer%np_horiz / f_virtual
-        diffractometer%cgap = diffractometer%cgap * f_virtual
+        diffractometer%np_horiz = diffractometer%np_horiz
+        diffractometer%cgap = diffractometer%cgap
 
     end subroutine psd_convert_new
 
