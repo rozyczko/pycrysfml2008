@@ -138,7 +138,7 @@ module extension_cfml_ioform
             ierror = ret%setitem(3,li_orb)
         else
             ierror = tuple_create(ret,1)
-            ierror = ret%setitem(0,1)
+            ierror = ret%setitem(0,-1)
         end if
         resul = ret%get_c_ptr()
 
