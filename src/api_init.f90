@@ -40,6 +40,7 @@ module api_init
     use extension_cfml_ioform
     use extension_cfml_sxtal_geom
     use extension_cfml_diffpatt
+    use extension_cfml_export_vtk
 
     implicit none
 
@@ -72,7 +73,7 @@ module api_init
         ierror = Forpy_Initialize()
 
         ! Build method table
-        call method_Table%init(4)
+        call method_Table%init(6)
         call method_Table%add_method("z1frmd",&
             "z1frmd",METH_VARARGS,&
             c_funloc(py_z1frmd))
@@ -85,7 +86,12 @@ module api_init
         call method_Table%add_method("diffpatt_sim",&
             "py_diffpatt_sim",METH_VARARGS,&
             c_funloc(py_diffpatt_sim))
-
+        call method_Table%add_method("vtk_scan_arrays",&
+            "py_vtk_scan_arrays",METH_VARARGS,&
+            c_funloc(py_vtk_scan_arrays))
+        call method_Table%add_method("vtk_scan_limits",&
+            "py_vtk_scan_limits",METH_VARARGS,&
+            c_funloc(py_vtk_scan_limits))
 
         ! Build mod_Def
         m = mod_Def%init("pycrysfml08","A Python API for CrysFML08",method_Table)

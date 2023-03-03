@@ -72,8 +72,8 @@ module extension_cfml_ioform
         type(c_ptr)        :: resul
 
         ! Local variables
-        integer :: ierror,i
-        character(len=:), allocatable :: f_name,m
+        integer :: ierror
+        character(len=:), allocatable :: f_name
         type(Cell_G_Type) :: cell
         class(Spg_Type), allocatable :: spg
         type(AtList_Type) :: asu
@@ -81,7 +81,6 @@ module extension_cfml_ioform
         type(list) :: li_orb
         type(object) :: item
         type(tuple) :: args,ret
-        type(nonetype) :: nret
 
         call Clear_Error()
 
@@ -157,7 +156,6 @@ module extension_cfml_ioform
         integer :: i,j
         real :: a
         real, dimension(3,3) :: U ! Matrix used for computing magnetic moment in cartesian coordinates
-        character(len=:), allocatable :: m
         type(Point_Orbit) :: orbit
         type(dict), dimension(:), allocatable :: di_orb
 
@@ -190,8 +188,6 @@ module extension_cfml_ioform
         integer,              intent(inout) :: ierror
 
         ! Local variables
-        real, dimension(:), allocatable :: phi_y,phi_z,mmom
-        character(len=:), allocatable :: m
         type(ndarray) :: pos,pos_c,mom,mom_c
 
         ierror = di_orb%setitem('mult',orbit%mult)

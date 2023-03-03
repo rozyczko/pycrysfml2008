@@ -88,14 +88,13 @@ module extension_cfml_diffpatt
         type(c_ptr)        :: resul
 
         ! Local variables
-        integer :: ierror,nat,i,nf,ier,maxnumref,mult
+        integer :: ierror,nat,i,nf,maxnumref,mult
         real(kind=cp), dimension(3) :: vcell,vang
         character(len=:), allocatable :: ph_name,spg_name,ex_name,mystr
         integer :: lun=11,lp=21
         real :: stlmax,tini,tfin,tim,ftim=1.0
         real, dimension(:), allocatable :: x
-        character(len=132) :: line,powfile
-        character(len=3)  :: mode
+        character(len=132) :: powfile
         character(len=8)  :: units="seconds",radiation
         type(Cell_G_Type) :: cell
         type(Spg_Type) :: spg

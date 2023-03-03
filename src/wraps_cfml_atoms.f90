@@ -97,7 +97,7 @@ module wraps_cfml_atoms
 
         ! Local variables
         integer :: i
-        type(ndarray) :: nd_active,nd_iph
+        type(ndarray) :: nd_iph
         type(dict), dimension(:), allocatable :: di_atom
         type(list) :: li_atom,li_active
 

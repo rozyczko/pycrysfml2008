@@ -92,18 +92,15 @@ module extension_cfml_sxtal_geom
         type(c_ptr)        :: resul
 
         ! Local variables
-        integer :: ierror,ierr
-        integer :: ipsd,np_horiz,np_vert,origin,blfr
+        integer :: ierror
+        integer :: ipsd,origin,blfr
         integer, dimension(:), pointer :: p_npix
-        real :: px,pz,ga_D,nu_D,x_D,z_D,cgap,agap,dist_samp_detector,ga_P,nu_P
-        real, dimension(3) :: det_offsets
+        real :: px,pz,ga_D,nu_D,x_D,z_D,dist_samp_detector,ga_P,nu_P
         real, dimension(:), pointer :: p_pisi,p_det_offsets
-        character(len=:), allocatable :: data_ordering
         type(diffractometer_type) :: diffractometer
         type(ndarray) :: nd_npix,nd_pisi,nd_det_offsets
         type(object) :: item
         type(tuple) :: args,ret
-        type(nonetype) :: nret
 
         call Clear_Error()
         ierror = 0

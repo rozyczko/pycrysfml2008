@@ -32,15 +32,28 @@ rem License along with this library; if not, see <http://www.gnu.org/licenses/>.
 rem
 rem -------------------------------------------------------------
 
-ifort /c /fpp %FORPY%\forpy_mod.f90
-ifort /c /fpp ..\..\src\wraps_cfml_atoms.f90 /I%CRYSFML08_INSTALL%\include
-ifort /c /fpp ..\..\src\wraps_cfml_metrics.f90 /I%CRYSFML08_INSTALL%\include
-ifort /c /fpp ..\..\src\py_cfml_sxtal_geom.f90 /I%CRYSFML08_INSTALL%\include
-ifort /c /fpp ..\..\src\py_extension_cfml_messages.f90 /I%CRYSFML08_INSTALL%\include
-ifort /c /fpp ..\..\src\py_extension_cfml_ioform.f90 /I%CRYSFML08_INSTALL%\include
-ifort /c /fpp ..\..\src\py_extension_cfml_sxtal_geom.f90 /I%CRYSFML08_INSTALL%\include
-ifort /c /fpp ..\..\src\py_extension_cfml_diffpatt.f90 /I%CRYSFML08_INSTALL%\include
-ifort /c /fpp ..\..\src\api_init.f90 /I%CRYSFML08_INSTALL%\include
+echo Compiling forpy_mod.F90
+ifort /c /fpp /nologo /Warn %FORPY%\forpy_mod.f90
+echo Compiling wraps_cfml_atoms.f90
+ifort /c /fpp /nologo /Warn ..\..\src\wraps_cfml_atoms.f90 /I%CRYSFML08_INSTALL%\include
+echo Compiling wraps_cfml_metrics.f90
+ifort /c /fpp /nologo /Warn ..\..\src\wraps_cfml_metrics.f90 /I%CRYSFML08_INSTALL%\include
+echo Compiling py_cfml_sxtal_geom.f90
+ifort /c /fpp /nologo /Warn ..\..\src\py_cfml_sxtal_geom.f90 /I%CRYSFML08_INSTALL%\include
+echo Compiling py_extension_cfml_messages.f90
+ifort /c /fpp /nologo /Warn ..\..\src\py_extension_cfml_messages.f90 /I%CRYSFML08_INSTALL%\include
+echo Compiling py_extension_cfml_ioform.f90
+ifort /c /fpp /nologo /Warn ..\..\src\py_extension_cfml_ioform.f90 /I%CRYSFML08_INSTALL%\include
+echo Compiling py_extension_cfml_sxtal_geom.f90
+ifort /c /fpp /nologo /Warn ..\..\src\py_extension_cfml_sxtal_geom.f90 /I%CRYSFML08_INSTALL%\include
+echo Compiling py_extension_cfml_diffpatt.f90
+ifort /c /fpp /nologo /Warn ..\..\src\py_extension_cfml_diffpatt.f90 /I%CRYSFML08_INSTALL%\include
+echo Compiling py_extension_cfml_export_vtk.f90
+ifort /c /fpp /nologo /Warn ..\..\src\py_extension_cfml_export_vtk.f90 /I%CRYSFML08_INSTALL%\include
+echo Compiling api_init.f90
+ifort /c /fpp /nologo /Warn ..\..\src\api_init.f90 /I%CRYSFML08_INSTALL%\include
+
+echo Linking
 link *.obj /out:"pycrysfml08.dll" /libpath:%CRYSFML08_INSTALL%\lib /dll %LIBPYTHON% libCrysFML08.a
 if not exist ..\..\dll (
     mkdir ..\..\dll
