@@ -42,7 +42,6 @@ module extension_cfml_sxtal_geom
     ! -------------------
     ! Internal procedures
     ! -------------------
-    ! psd_convert_new(diffractometer,conversion_type,ga_D,nu_D,px,pz,x_D,z_D,ga_P,nu_P,ierr)
     !>
 
     use forpy_mod
