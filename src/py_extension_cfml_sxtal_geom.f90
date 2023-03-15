@@ -32,17 +32,11 @@
 ! -------------------------------------------------------------
 
 module extension_cfml_sxtal_geom
+    !! --------------------------------
+    !! Functions accesibles from Python
+    !! --------------------------------
+    !! function py_ganu_from_xz(self_ptr,args_ptr) result(resul) bind(c)
 
-    !<
-    ! --------------------------------
-    ! Functions accesibles from Python
-    ! --------------------------------
-    ! function py_ganu_from_xz(self_ptr,args_ptr) result(resul) bind(c)
-    !
-    ! -------------------
-    ! Internal procedures
-    ! -------------------
-    !>
 
     use forpy_mod
     use iso_c_binding
@@ -57,11 +51,10 @@ module extension_cfml_sxtal_geom
     contains
 
     function py_ganu_from_xz(self_ptr,args_ptr) result(resul) bind(c)
-
-        !< Compute two theta angle from detector coordinates
+        ! Compute the two theta angle from coordinates on a 2D detector
         !
-        !   Arguments in args_ptr
-        !   --------           -----------         -----------
+        !   Arguments in args_ptr</br>
+        !   --------           -----------         -----------</br>
         !   Variable           Python type         Description
         !   --------           -----------         -----------
         !   px                 float               x coordinate, in pixels
@@ -83,8 +76,6 @@ module extension_cfml_sxtal_geom
         !   blfr               integer             Busing-Levy frame
         !                                          0: z-up
         !                                          1: z-down
-        !>
-
         ! Arguments
         type(c_ptr), value :: self_ptr
         type(c_ptr), value :: args_ptr
@@ -160,8 +151,8 @@ module extension_cfml_sxtal_geom
         if (ierror == 0) then
             ierror = tuple_create(ret,3)
             ierror = ret%setitem(0,0)
-            if (ierror == 0) ierror = ret%setitem(1,ga_P)
-            if (ierror == 0) ierror = ret%setitem(2,nu_P)
+            ierror = ret%setitem(1,ga_P)
+            ierror = ret%setitem(2,nu_P)
         else
             ierror = tuple_create(ret,1)
             ierror = ret%setitem(0,-1)

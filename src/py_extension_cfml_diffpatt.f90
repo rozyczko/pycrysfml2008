@@ -33,19 +33,6 @@
 
 module extension_cfml_diffpatt
 
-    !<
-    ! --------------------------------
-    ! Functions accesibles from Python
-    ! --------------------------------
-    ! function py_diffpatt_sim(self_ptr,args_ptr) result(resul) bind(c)
-    !
-    ! -------------------
-    ! Internal procedures
-    ! -------------------
-    ! pure subroutine TCH(Hg,Hl,Fwhm,Eta)
-    ! subroutine Calc_Powder_Pattern(Ppc,Hkl,Pat)
-    !>
-
     use forpy_mod
     use iso_c_binding
 
@@ -79,8 +66,9 @@ module extension_cfml_diffpatt
 
     function py_diffpatt_sim(self_ptr,args_ptr) result(resul) bind(c)
 
-        !> Compute a powder diffraction pattern from a dictionary
-        !  obtained from a json file
+        !! author: Nebil A. Katcho
+        !! date: 09/03/2023
+        !! summary: Compute a powder diffraction pattern
 
         ! Arguments
         type(c_ptr), value :: self_ptr
@@ -99,9 +87,9 @@ module extension_cfml_diffpatt
         type(Cell_G_Type) :: cell
         type(Spg_Type) :: spg
         type(AtList_Type) :: a
-        Type(RefList_Type) :: hkl
-        Type(DiffPat_E_Type) :: Pat
-        Type(PowPat_CW_Conditions) :: PPC
+        type(RefList_Type) :: hkl
+        type(DiffPat_E_Type) :: Pat
+        type(PowPat_CW_Conditions) :: PPC
         type(nonetype) :: nret
         type(object) :: item
         type(tuple) :: args,ret
