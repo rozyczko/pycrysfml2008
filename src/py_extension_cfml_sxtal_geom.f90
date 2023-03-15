@@ -53,8 +53,8 @@ module extension_cfml_sxtal_geom
     function py_ganu_from_xz(self_ptr,args_ptr) result(resul) bind(c)
         ! Compute the two theta angle from coordinates on a 2D detector
         !
-        !   Arguments in args_ptr</br>
-        !   --------           -----------         -----------</br>
+        !   Arguments in args_ptr
+        !   --------           -----------         -----------
         !   Variable           Python type         Description
         !   --------           -----------         -----------
         !   px                 float               x coordinate, in pixels
@@ -83,7 +83,7 @@ module extension_cfml_sxtal_geom
 
         ! Local variables
         integer :: ierror
-        integer :: ipsd,origin,blfr
+        integer :: ipsd,origin
         integer, dimension(:), pointer :: p_npix
         real :: px,pz,ga_D,nu_D,x_D,z_D,dist_samp_detector,ga_P,nu_P
         real, dimension(:), pointer :: p_pisi,p_det_offsets
@@ -120,8 +120,6 @@ module extension_cfml_sxtal_geom
         if (ierror == 0) ierror = nd_det_offsets%get_data(p_det_offsets)
         if (ierror == 0) ierror = args%getitem(item,9)
         if (ierror == 0) ierror = cast(origin,item)
-        if (ierror == 0) ierror = args%getitem(item,10)
-        if (ierror == 0) ierror = cast(blfr,item)
         if (ierror /= 0) then
             ierror = EXCEPTION_ERROR
             call raise_exception(RuntimeError,'py_ganu_from_xz: Error getting arguments')
@@ -136,11 +134,6 @@ module extension_cfml_sxtal_geom
             diffractometer%agap = p_pisi(2)
             diffractometer%dist_samp_detector = dist_samp_detector
             diffractometer%det_offsets(:) = p_det_offsets(:)
-            if (blfr == 1) then
-                diffractometer%bl_frame = 'z-down'
-            else
-                diffractometer%bl_frame = 'z-up'
-            end if
         end if
 
         ! Compute ga_P and nu_P
