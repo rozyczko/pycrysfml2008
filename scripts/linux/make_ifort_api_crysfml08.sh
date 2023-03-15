@@ -47,6 +47,8 @@ echo Compiling py_extension_cfml_sxtal_geom
 ifort -fPIC -fpp -c ../../src/py_extension_cfml_sxtal_geom.f90 -I$CRYSFML08_INSTALL/include
 echo Compiling py_extension_cfml_diffpatt
 ifort -fPIC -fpp -c ../../src/py_extension_cfml_diffpatt.f90 -I$CRYSFML08_INSTALL/include
+echo Compiling py_extension_cfml_export_vtk
+ifort -fPIC -fpp -c ../../src/py_extension_cfml_export_vtk.f90 -I$CRYSFML08_INSTALL/include
 echo Compiling api_init
 ifort -fPIC -fpp -c ../../src/api_init.f90 -I$CRYSFML08_INSTALL/include
 
