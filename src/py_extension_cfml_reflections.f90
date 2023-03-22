@@ -94,43 +94,38 @@ module extension_cfml_reflections
         ierror = 0
 
         ! Get arguments
-        !call unsafe_cast_from_c_ptr(args,args_ptr)
-        !if (ierror == 0) ierror = args%getitem(item,0)
-        !if (ierror == 0) ierror = cast(spg_symb,item)
-        !if (ierror == 0) ierror = args%getitem(item,1)
-        !if (ierror == 0) ierror = cast(nd_cell,item)
-        !if (ierror == 0) ierror = nd_cell%get_data(p_cell)
-        !if (ierror == 0) ierror = args%getitem(item,2)
-        !if (ierror == 0) ierror = cast(stlmin,item)
-        !if (ierror == 0) ierror = args%getitem(item,3)
-        !if (ierror == 0) ierror = cast(stlmax,item)
-        !if (ierror /= 0) then
-        !    ierror = EXCEPTION_ERROR
-        !    call raise_exception(RuntimeError,'py_generate_reflections: Error getting !arguments')
-        !end if
+        call unsafe_cast_from_c_ptr(args,args_ptr)
+        if (ierror == 0) ierror = args%getitem(item,0)
+        if (ierror == 0) ierror = cast(spg_symb,item)
+        if (ierror == 0) ierror = args%getitem(item,1)
+        if (ierror == 0) ierror = cast(nd_cell,item)
+        if (ierror == 0) ierror = nd_cell%get_data(p_cell)
+        if (ierror == 0) ierror = args%getitem(item,2)
+        if (ierror == 0) ierror = cast(stlmin,item)
+        if (ierror == 0) ierror = args%getitem(item,3)
+        if (ierror == 0) ierror = cast(stlmax,item)
+        if (ierror /= 0) then
+            ierror = EXCEPTION_ERROR
+            call raise_exception(RuntimeError,'py_generate_reflections: Error getting !arguments')
+        end if
 
-        write(*,'(a)') 'Setting spacegroup'
         if (ierror == 0) call Set_SpaceGroup('P 1',spg)
-        !write(*,'(a)') 'Checking error...'
-        !if (ierror == 0) call check_error('py_generate_reflections',ierror)
-        !write(*,'(a)') 'Setting crystal cell'
-        !if (ierror == 0) call Set_Crystal_Cell(p_cell(1:3),p_cell(4:6),cell)
-        !if (ierror == 0) call check_error('py_generate_reflections',ierror)
-        !write(*,'(a)') 'Computing reflections'
-        !if (ierror == 0) call HKL_Gen_Sxtal(cell,spg,stlmin,stlmax,hkls)
-        !if (ierror == 0) call check_error('py_HKL_Gen_Sxtal',ierror)
-        !write(*,'(a)') 'Wrapping'
-        !if (ierror == 0) call wrap_reflist_type(hkls,di_hkls,ierror)
+        if (ierror == 0) call check_error('py_generate_reflections',ierror)
+        if (ierror == 0) call Set_Crystal_Cell(p_cell(1:3),p_cell(4:6),cell)
+        if (ierror == 0) call check_error('py_generate_reflections',ierror)
+        if (ierror == 0) call HKL_Gen_Sxtal(cell,spg,stlmin,stlmax,hkls)
+        if (ierror == 0) call check_error('py_HKL_Gen_Sxtal',ierror)
+        if (ierror == 0) call wrap_reflist_type(hkls,di_hkls,ierror)
 
         ! Return tuple
-        !if (ierror == 0) then
-        !    ierror = tuple_create(ret,2)
-        !    ierror = ret%setitem(0,0)
-        !    ierror = ret%setitem(1,di_hkls)
-        !else
+        if (ierror == 0) then
+            ierror = tuple_create(ret,2)
+            ierror = ret%setitem(0,0)
+            ierror = ret%setitem(1,di_hkls)
+        else
             ierror = tuple_create(ret,1)
             ierror = ret%setitem(0,-1)
-        !end if
+        end if
         resul = ret%get_c_ptr()
 
     end function py_generate_reflections
