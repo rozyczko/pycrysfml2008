@@ -33,14 +33,6 @@
 
 module wraps_cfml_metrics
 
-    !<
-    ! -------------------
-    ! Internal procedures
-    ! -------------------
-    ! subroutine wrap_cell_type(for_var,dic_var,ierror)
-    ! subroutine wrap_cell_g_type(for_var,dic_var,ierror)
-    !>
-
     use forpy_mod
     use cfml_metrics
 

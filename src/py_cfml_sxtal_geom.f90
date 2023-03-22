@@ -44,16 +44,16 @@ module py_cfml_sxtal_geom
     contains
 
     function py_z1frmd(self_ptr,args_ptr) result(resul) bind(c)
-
         !! author: Nebil A. Katcho
         !! date: 09/03/2023
         !! display: public
         !! proc_internals: true
-        !!
-        !!* args_ptr = [wave,ch,ph,ga,om,nu]
-        !!* result = [ierr,z1]
-        !!
-        !! Wrapper for procedure z1frmd.</br><br> Compute the scattering vector from angles and wavelength for 4-circle geometry.</br>
+        !! summary: Wrapper for procedure z1frmd. Compute the scattering vector from angles and wavelength for 4-circle geometry.
+
+        !! ARGS_PTR = (wave,ch,ph,ga,om,nu)
+        !
+        !! RESULT = (ierr,nd_z1)
+
         !!
         ! Arguments
         type(c_ptr), value :: self_ptr
@@ -123,13 +123,16 @@ module py_cfml_sxtal_geom
     end function py_z1frmd
 
     function py_z1frnb(self_ptr,args_ptr) result(resul) bind(c)
-
         !! author: Nebil A. Katcho
         !! date: 09/03/2023
-        !! summary: Wrapper for procedure z1frnb.
-        !! summary: Compute the scattering vector from angles and wavelength for normal-beam geometry
         !! display: public
         !! proc_internals: true
+        !! summary: Wrapper for procedure z1frnb.
+        !! summary: Compute the scattering vector from angles and wavelength for normal-beam geometry
+        !
+        !! ARGS_PTR = (wave,ch,ph,ga,om,nu)
+        !
+        !! RESULT = (ierr,nd_z1)
 
         ! Arguments
         type(c_ptr), value :: self_ptr
@@ -137,10 +140,10 @@ module py_cfml_sxtal_geom
         type(c_ptr)        :: resul
 
         ! Local variables for the CrysFML08 procedure
-        real(kind=cp) :: wave !! Wavelength,item 1 in args_ptr
-        real(kind=cp) :: ga   !! Gamma angle, item 2 in args_ptr
-        real(kind=cp) :: om   !! Omega angle, item 3 in args_ptr
-        real(kind=cp) :: nu   !! Nu angle, item 4 in args_ptr
+        real(kind=cp) :: wave !! Wavelength
+        real(kind=cp) :: ga   !! Gamma angle (degrees)
+        real(kind=cp) :: om   !! Omega angle (degress)
+        real(kind=cp) :: nu   !! Nu angle (degrees)
         real(kind=cp), dimension(3) :: z1 !! Scattering vector
 
         ! Other local variables

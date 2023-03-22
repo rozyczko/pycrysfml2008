@@ -33,15 +33,6 @@
 
 module wraps_cfml_atoms
 
-    !<
-    ! -------------------
-    ! Internal procedures
-    ! -------------------
-    ! subroutine wrap_atm_type(for_var,dic_var,ierror)
-    ! subroutine wrap_atm_type(for_var,dic_var,ierror)
-    ! subroutine wrap_atlist_type(for_var,dic_var,ierror)
-    !>
-
     use forpy_mod
     use cfml_atoms
 

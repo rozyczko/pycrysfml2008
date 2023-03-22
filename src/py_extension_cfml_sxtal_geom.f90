@@ -32,11 +32,6 @@
 ! -------------------------------------------------------------
 
 module extension_cfml_sxtal_geom
-    !! --------------------------------
-    !! Functions accesibles from Python
-    !! --------------------------------
-    !! function py_ganu_from_xz(self_ptr,args_ptr) result(resul) bind(c)
-
 
     use forpy_mod
     use iso_c_binding
@@ -51,9 +46,15 @@ module extension_cfml_sxtal_geom
     contains
 
     function py_ganu_from_xz(self_ptr,args_ptr) result(resul) bind(c)
-        ! Compute the two theta angle from coordinates on a 2D detector
+        !! author: Nebil A. Katcho
+        !! date: 09/03/2023
+        !! display: public
+        !! proc_internals: true
+        !! summary: Compute the gamma and nu values from coordinates on a 2D detector
         !
-        !   Arguments in args_ptr
+        !! Compute the gamma and nu values from coordinates on a 2D detector
+        !!
+        !! ARGS_PTR = (px,pz,ga_D,nu_D,ipsd,npix,pisi,dist_samp_detectpr,det_offsets,origin,blfr)
         !   --------           -----------         -----------
         !   Variable           Python type         Description
         !   --------           -----------         -----------
@@ -64,10 +65,10 @@ module extension_cfml_sxtal_geom
         !   ipsd               integer             detector type
         !                                          2: flat detector
         !                                          3: horizontal banana
-        !   nd_npix            ndarray(2,int32)    number of horizontal and vertical pixels
-        !   nd_pisi            ndarray(2,float32)  horizontal and vertical pixel sizes
+        !   npix               ndarray(2,int32)    number of horizontal and vertical pixels
+        !   pisi               ndarray(2,float32)  horizontal and vertical pixel sizes
         !   dist_samp_detector float               sample detector distance
-        !   nd_det_offsets     ndarray(3,float32)  x, y and z detector offsets
+        !   det_offsets        ndarray(3,float32)  x, y and z detector offsets
         !   origin             integer             origin for numbering pixels
         !                                          0: top    left
         !                                          1: top    right
@@ -76,6 +77,14 @@ module extension_cfml_sxtal_geom
         !   blfr               integer             Busing-Levy frame
         !                                          0: z-up
         !                                          1: z-down
+        !! RESUL = (ierr,ga_P,nu_P)
+        !   --------           -----------         -----------
+        !   Variable           Python type         Description
+        !   --------           -----------         -----------
+        !   ierr               integer             if ierr /= 0, an error occurred
+        !   ga_P               float               gamma value in degrees
+        !   nu_P               float               nu    value in degrees
+
         ! Arguments
         type(c_ptr), value :: self_ptr
         type(c_ptr), value :: args_ptr
