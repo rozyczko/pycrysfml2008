@@ -75,7 +75,7 @@ module api_init
         ierror = Forpy_Initialize()
 
         ! Build method table
-        call method_Table%init(8)
+        call method_Table%init(9)
         call method_Table%add_method("z1frmd",&
             "z1frmd",METH_VARARGS,&
             c_funloc(py_z1frmd))
@@ -100,6 +100,9 @@ module api_init
         call method_Table%add_method("generate_reflections",&
             "py_generate_reflections",METH_VARARGS,&
             c_funloc(py_generate_reflections))
+        call method_Table%add_method("ub_from_q_and_cell",&
+            "py_ub_from_q_and_cell",METH_VARARGS,&
+            c_funloc(py_ub_from_q_and_cell))
 
         ! Build mod_Def
         m = mod_Def%init("pycrysfml08","A Python API for CrysFML08",method_Table)

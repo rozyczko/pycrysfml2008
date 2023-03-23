@@ -93,6 +93,13 @@ module wraps_cfml_reflections
                 if (ierror == 0) ierror = dic_var%setitem('b',A%b)
                 if (ierror == 0) ierror = dic_var%setitem('w',A%w)
         end select
+        select type (A => for_var)
+            type is (refl_type)
+                if (ierror == 0) ierror = dic_var%setitem('fortran_type','refl_type')
+            type is (srefl_type)
+                if (ierror == 0) ierror = dic_var%setitem('fortran_type','srefl_type')
+        end select
+
     end subroutine wrap_refl_type
 
 end module wraps_cfml_reflections

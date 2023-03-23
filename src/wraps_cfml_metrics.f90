@@ -83,6 +83,12 @@ module wraps_cfml_metrics
                 if (ierror == 0) ierror = dic_var%setitem('inv_bl_m',nd_inv_bl_m)
                 if (ierror == 0) ierror = dic_var%setitem('carttype',A%carttype)
         end select
+        select type (A => for_var)
+            type is (cell_type)
+                if (ierror == 0) ierror = dic_var%setitem('fortran_type','cell_type')
+            type is (cell_g_type)
+                if (ierror == 0) ierror = dic_var%setitem('fortran_type','cell_g_type')
+        end select
 
     end subroutine wrap_cell_type
 

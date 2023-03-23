@@ -54,7 +54,7 @@ module extension_cfml_reflections
         !! proc_internals: true
         !! summary: Generate a list of reflections for a given space group
         !
-        !!  Generate a list of reflections for a given space group
+        !!  Generate a list of reflections for a given space group.
         !!
         !!  ARGS_PTR = (spg_symb,cell,sintlmin,sintlmax)
         !   --------           -----------         -----------
@@ -70,7 +70,7 @@ module extension_cfml_reflections
         !   Variable           Python type         Description
         !   --------           -----------         -----------
         !   ierr               integer             if ierr /= 0, an error occurred
-        !   di_hkls            dictionary
+        !   di_hkls            dictionary          wrap of crysfml type RefList_Type
 
         ! Arguments
         type(c_ptr), value :: self_ptr
@@ -114,7 +114,8 @@ module extension_cfml_reflections
         if (ierror == 0) call Set_Crystal_Cell(p_cell(1:3),p_cell(4:6),cell)
         if (ierror == 0) call check_error('py_generate_reflections',ierror)
         if (ierror == 0) call HKL_Gen_Sxtal(cell,spg,stlmin,stlmax,hkls)
-        if (ierror == 0) call check_error('py_HKL_Gen_Sxtal',ierror)
+        if (ierror == 0) call check_error('py_generate_reflections',ierror)
+        if (ierror == 0) ierror = dict_create(di_hkls)
         if (ierror == 0) call wrap_reflist_type(hkls,di_hkls,ierror)
 
         ! Return tuple
