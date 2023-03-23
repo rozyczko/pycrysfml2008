@@ -49,7 +49,7 @@ module extension_cfml_reflections
 
     function py_generate_reflections(self_ptr,args_ptr) result(resul) bind(c)
         !! author: Nebil A. Katcho
-        !! date: 20/03/2023
+        !! date: 23/03/2023
         !! display: public
         !! proc_internals: true
         !! summary: Generate a list of reflections for a given space group
@@ -70,6 +70,7 @@ module extension_cfml_reflections
         !   Variable           Python type         Description
         !   --------           -----------         -----------
         !   ierr               integer             if ierr /= 0, an error occurred
+        !   err_cfml%msg       string              error message
         !   di_hkls            dictionary          wrap of crysfml type RefList_Type
 
         ! Arguments
@@ -77,16 +78,22 @@ module extension_cfml_reflections
         type(c_ptr), value :: args_ptr
         type(c_ptr)        :: resul
 
+        ! Variables in args_ptr
+        character(len=:), allocatable :: spg_symb !! Space group symbol
+        type(ndarray)                 :: nd_cell  !! Cell parameters (a,b,c,alpha,beta,gamma)
+        real                          :: stlmin   !! Minimum value for sin(theta) / lambda
+        real                          :: stlmax   !! Maximum value for sin(theta) / lambda
+
+        ! Variables in resul
+        integer                       :: ierr     !! if ierr /= 0, an error ocurred
+        type(dict)                    :: di_hkls  !! Dictionary with the list of calculated reflections
+
         ! Local variables
         integer :: ierror
-        real :: stlmin,stlmax
         real, dimension(:), pointer :: p_cell
-        character(len=:), allocatable :: spg_symb !! Space group symbol
-        type(Cell_G_Type) :: cell                 !! Crystal cell
-        type(SPG_Type) :: spg                     !! Space group
-        type(RefList_Type) :: hkls                !! List of calculated reflections
-        type(dict) :: di_hkls                     !! Dictionary with the list of calculated reflections
-        type(ndarray) :: nd_cell                  !! cell parameters (a,b,c,alpha,beta,gamma)
+        type(Cell_G_Type) :: cell
+        type(SPG_Type) :: spg
+        type(RefList_Type) :: hkls
         type(object) :: item
         type(tuple) :: args,ret
 
@@ -120,11 +127,13 @@ module extension_cfml_reflections
 
         ! Return tuple
         if (ierror == 0) then
-            ierror = tuple_create(ret,2)
+            ierror = tuple_create(ret,3)
             ierror = ret%setitem(0,0)
-            ierror = ret%setitem(1,di_hkls)
+            ierror = ret%setitem(1,trim(err_cfml%msg))
+            ierror = ret%setitem(2,di_hkls)
         else
-            ierror = tuple_create(ret,1)
+            ierror = tuple_create(ret,2)
+            ierror = ret%setitem(1,trim(err_cfml%msg))
             ierror = ret%setitem(0,-1)
         end if
         resul = ret%get_c_ptr()
