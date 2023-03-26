@@ -33,17 +33,10 @@
 
 module extension_cfml_messages
 
-    !<
-    ! -------------------
-    ! Internal procedures
-    ! -------------------
-    ! subroutine check_error(procedure,ierror)
-    !>
-
     use forpy_mod
     use iso_c_binding
 
-    use CFML_GlobalDeps, only: Err_CFML
+    use cfml_globaldeps, only: err_cfml
 
     contains
 
