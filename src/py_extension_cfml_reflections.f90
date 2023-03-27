@@ -36,12 +36,11 @@ module extension_cfml_reflections
     use forpy_mod
     use iso_c_binding
 
-    use CFML_GlobalDeps, only: Clear_Error,Err_CFML
-    use CFML_gSpaceGroups, only: SPG_Type,Set_SpaceGroup
-    use CFML_Metrics, only: Cell_G_Type,Set_Crystal_Cell
-    use CFML_Reflections, only: RefList_Type,Hkl_Gen_Sxtal
-    use extension_cfml_messages, only: check_error
-    use wraps_cfml_reflections
+    use cfml_globaldeps, only: clear_error,err_cfml
+    use cfml_gspacegroups, only: spg_type,set_spacegroup
+    use cfml_messages, only: set_python_error_flag
+    use cfml_metrics, only: cell_g_type,set_crystal_cell
+    use cfml_reflections, only: reflist_type,hkl_gen_sxtal,wrap_reflist_type
 
     implicit none
 
@@ -49,7 +48,7 @@ module extension_cfml_reflections
 
     function py_generate_reflections(self_ptr,args_ptr) result(resul) bind(c)
         !! author: ILL Scientific Computing Group
-        !! date: 23/03/2023
+        !! date: 27/03/2023
         !! display: public
         !! proc_internals: true
         !! summary: Generate a list of reflections for a given space group
@@ -92,12 +91,12 @@ module extension_cfml_reflections
         integer :: ierror
         real, dimension(:), pointer :: p_cell
         type(Cell_G_Type) :: cell
-        type(SPG_Type) :: spg
+        type(spg_type) :: spg
         type(RefList_Type) :: hkls
         type(object) :: item
         type(tuple) :: args,ret
 
-        call Clear_Error()
+        call clear_error()
         ierror = 0
 
         ! Get arguments
@@ -112,29 +111,31 @@ module extension_cfml_reflections
         if (ierror == 0) ierror = args%getitem(item,3)
         if (ierror == 0) ierror = cast(stlmax,item)
         if (ierror /= 0) then
-            ierror = EXCEPTION_ERROR
-            call raise_exception(RuntimeError,'py_generate_reflections: Error getting !arguments')
+            err_cfml%Ierr = -1
+            err_cfml%Msg = 'py_generate_reflections: Error getting arguments'
+            call set_python_error_flag(ierror)
         end if
 
-        if (ierror == 0) call Set_SpaceGroup('P 1',spg)
-        if (ierror == 0) call check_error('py_generate_reflections',ierror)
+        if (ierror == 0) call set_spacegroup('P 1',spg)
+        if (ierror == 0) call set_python_error_flag(ierror)
         if (ierror == 0) call Set_Crystal_Cell(p_cell(1:3),p_cell(4:6),cell)
-        if (ierror == 0) call check_error('py_generate_reflections',ierror)
+        if (ierror == 0) call set_python_error_flag(ierror)
         if (ierror == 0) call HKL_Gen_Sxtal(cell,spg,stlmin,stlmax,hkls)
-        if (ierror == 0) call check_error('py_generate_reflections',ierror)
+        if (ierror == 0) call set_python_error_flag(ierror)
         if (ierror == 0) ierror = dict_create(di_hkls)
         if (ierror == 0) call wrap_reflist_type(hkls,di_hkls,ierror)
 
         ! Return tuple
+        ierr = ierror
         if (ierror == 0) then
             ierror = tuple_create(ret,3)
-            ierror = ret%setitem(0,0)
+            ierror = ret%setitem(0,ierr)
             ierror = ret%setitem(1,trim(err_cfml%msg))
             ierror = ret%setitem(2,di_hkls)
         else
             ierror = tuple_create(ret,2)
+            ierror = ret%setitem(0,ierr)
             ierror = ret%setitem(1,trim(err_cfml%msg))
-            ierror = ret%setitem(0,-1)
         end if
         resul = ret%get_c_ptr()
 
