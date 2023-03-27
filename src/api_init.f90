@@ -11,10 +11,7 @@
 !
 ! Copyright (C) 2020-2022  Institut Laue-Langevin (ILL), Grenoble, FRANCE
 !
-! Authors: Nebil A. Katcho (ILL)
-!          Juan Rodriguez-Carvajal (ILL)
-!
-!
+! Authors: ILL Scientific Computing Group (ILL)
 !
 ! This library is free software; you can redistribute it and/or
 ! modify it under the terms of the GNU Lesser General Public
@@ -36,13 +33,7 @@ module api_init
 
     use forpy_mod
     use iso_c_binding
-    use py_cfml_sxtal_geom
-    use extension_cfml_diffpatt
-    use extension_cfml_ioform
-    use extension_cfml_export_vtk
     use extension_cfml_reflections
-    use extension_cfml_sxtal_geom
-
 
     implicit none
 
@@ -75,34 +66,28 @@ module api_init
         ierror = Forpy_Initialize()
 
         ! Build method table
-        call method_Table%init(9)
-        call method_Table%add_method("z1frmd",&
-            "z1frmd",METH_VARARGS,&
-            c_funloc(py_z1frmd))
-        call method_Table%add_method("z1frnb",&
-            "z1frnb",METH_VARARGS,&
-            c_funloc(py_z1frnb))
-        call method_Table%add_method("xtal_structure_from_file",&
-            "py_xtal_structure_from_file",METH_VARARGS,&
-            c_funloc(py_xtal_structure_from_file))
-        call method_Table%add_method("ganu_from_xz",&
-            "py_ganu_from_xz",METH_VARARGS,&
-            c_funloc(py_ganu_from_xz))
-        call method_Table%add_method("diffpatt_sim",&
-            "py_diffpatt_sim",METH_VARARGS,&
-            c_funloc(py_diffpatt_sim))
-        call method_Table%add_method("vtk_scan_arrays",&
-            "py_vtk_scan_arrays",METH_VARARGS,&
-            c_funloc(py_vtk_scan_arrays))
-        call method_Table%add_method("vtk_scan_limits",&
-            "py_vtk_scan_limits",METH_VARARGS,&
-            c_funloc(py_vtk_scan_limits))
+        call method_Table%init(1)
+        !call method_Table%add_method("z1frmd",&
+        !    "z1frmd",METH_VARARGS,&
+        !    c_funloc(py_z1frmd))
+        !call method_Table%add_method("z1frnb",&
+        !    "z1frnb",METH_VARARGS,&
+        !    c_funloc(py_z1frnb))
+        !call method_Table%add_method("xtal_structure_from_file",&
+        !    "py_xtal_structure_from_file",METH_VARARGS,&
+        !    c_funloc(py_xtal_structure_from_file))
+        !call method_Table%add_method("diffpatt_sim",&
+        !    "py_diffpatt_sim",METH_VARARGS,&
+        !    c_funloc(py_diffpatt_sim))
+        !call method_Table%add_method("vtk_scan_arrays",&
+        !    "py_vtk_scan_arrays",METH_VARARGS,&
+        !    c_funloc(py_vtk_scan_arrays))
+        !call method_Table%add_method("vtk_scan_limits",&
+        !    "py_vtk_scan_limits",METH_VARARGS,&
+        !    c_funloc(py_vtk_scan_limits))
         call method_Table%add_method("generate_reflections",&
             "py_generate_reflections",METH_VARARGS,&
             c_funloc(py_generate_reflections))
-        call method_Table%add_method("ub_from_q_and_cell",&
-            "py_ub_from_q_and_cell",METH_VARARGS,&
-            c_funloc(py_ub_from_q_and_cell))
 
         ! Build mod_Def
         m = mod_Def%init("pycrysfml08","A Python API for CrysFML08",method_Table)

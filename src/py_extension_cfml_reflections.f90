@@ -11,7 +11,7 @@
 !
 ! Copyright (C) 2020-2022  Institut Laue-Langevin (ILL), Grenoble, FRANCE
 !
-! Authors: Nebil A. Katcho (ILL)
+! Authors: ILL Scientific Computing Group (ILL)
 !          Juan Rodriguez-Carvajal (ILL)
 !
 !
@@ -48,7 +48,7 @@ module extension_cfml_reflections
     contains
 
     function py_generate_reflections(self_ptr,args_ptr) result(resul) bind(c)
-        !! author: Nebil A. Katcho
+        !! author: ILL Scientific Computing Group
         !! date: 23/03/2023
         !! display: public
         !! proc_internals: true
