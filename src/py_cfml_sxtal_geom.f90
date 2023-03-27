@@ -1,13 +1,13 @@
 !-------------------------------------------------------------
-! PyCrysFML08
+! cfml_sxtal_geom
 ! -------------------------------------------------------------
-! This file is part of PyCrysFML08
+! This file is part of cfml_sxtal_geom
 !
-! The PyCrysFML08 is distributed under LGPL. In agreement with the
+! The cfml_sxtal_geom is distributed under LGPL. In agreement with the
 ! Intergovernmental Convention of the ILL, this software cannot be used
 ! in military applications.
 !
-! PyCrysFML08 is based on Elias Rabel work for Forpy, see <https://github.com/ylikx/forpy>.
+! cfml_sxtal_geom is based on Elias Rabel work for Forpy, see <https://github.com/ylikx/forpy>.
 !
 ! Copyright (C) 2020-2022  Institut Laue-Langevin (ILL), Grenoble, FRANCE
 !
@@ -28,65 +28,195 @@
 !
 ! -------------------------------------------------------------
 
-
-module api_init
+module py_cfml_sxtal_geom
 
     use forpy_mod
     use iso_c_binding
-    use py_cfml_sxtal_geom
-    use extension_cfml_reflections
+
+    use cfml_globaldeps
+    use cfml_messages
+    use cfml_sxtal_geom
 
     implicit none
 
-    type(PythonModule), save :: mod_Def
-    type(PythonMethodTable), save :: method_Table
-
     contains
 
-    ! Initialization function for Python 3
-    ! Called when importing module
-    ! Must use bind(c, name="PyInit_<module name>")
-    ! Return value must be type(c_ptr),
-    ! use the return value of PythonModule%init
-    function PyInit_pycrysfml08() bind(c,name="PyInit_pycrysfml08") result(m)
-    !DEC$ ATTRIBUTES DLLEXPORT :: PyInit_pycrysfml08
+    function py_z1frmd(self_ptr,args_ptr) result(resul) bind(c)
+        !! author: ILL Scientific Computing Group
+        !! date: 24/03/2023
+        !! display: public
+        !! proc_internals: true
+        !! summary: Wrapper for function z1frmd.
+        !! summary: Compute the scattering vector from angles and wavelength for 4-circle geometry.
+        !!
+        !! ARGS_PTR = (wave,ch,ph,ga,om,nu)
+        !!
+        !! RESUL = (ierr,err_cfml%msg,nd_z1)
+        !  --------           -----------         -----------
+        !  Variable           Python type         Description
+        !  --------           -----------         -----------
+        !  wave               float               wavelength
+        !  ch                 float               chi (degrees)
+        !  ph                 float               phi (degrees)
+        !  ga                 float               gamma (degrees)
+        !  om                 float               omega (degrees)
+        !  nu                 float               nu (degrees)
+        !  ierr               integer             if ierr /= 0, an error occurred
+        !  err_cfml%msg       string              error message
+        !  nd_z1              ndarray(3;float32)  scattering vector
+
+        ! Arguments
+        type(c_ptr), value :: self_ptr
+        type(c_ptr), value :: args_ptr
+        type(c_ptr)        :: resul
+
+        ! Python / Fortran interface variables
+        real(kind=cp) :: wave   !! wavelength
+        real(kind=cp) :: ch     !! chi angle (degrees)
+        real(kind=cp) :: ph     !! phi angle (degrees)
+        real(kind=cp) :: ga     !! gamma angle (degrees)
+        real(kind=cp) :: om     !! omega angle (degrees)
+        real(kind=cp) :: nu     !! nu angle (degrees)
+        integer       :: ierr   !! error flag
+        type(ndarray) :: nd_z1  !! scattering vector
 
         ! Local variables
-        type(c_ptr) :: m
-
-        m = Init()
-
-    end function PyInit_pycrysfml08
-
-    function Init() result(m)
-
-        ! Local variables
-        type(c_ptr) :: m
         integer :: ierror
+        real(kind=cp), dimension(3) :: z1 ! scattering vector
+        type(object) :: item
+        type(tuple) :: args,ret
 
-        ierror = Forpy_Initialize()
+        ! Reset error variable
+        ierr   = 0
+        ierror = 0
+        call clear_error()
 
-        ! Build method table
-        call method_Table%init(3)
-        call method_Table%add_method("z1frmd","z1frmd",METH_VARARGS,c_funloc(py_z1frmd))
-        call method_Table%add_method("z1frnb","z1frnb",METH_VARARGS,c_funloc(py_z1frnb))
-        call method_Table%add_method("generate_reflections","py_generate_reflections",METH_VARARGS,c_funloc(py_generate_reflections))
-        !call method_Table%add_method("xtal_structure_from_file",&
-        !    "py_xtal_structure_from_file",METH_VARARGS,&
-        !    c_funloc(py_xtal_structure_from_file))
-        !call method_Table%add_method("diffpatt_sim",&
-        !    "py_diffpatt_sim",METH_VARARGS,&
-        !    c_funloc(py_diffpatt_sim))
-        !call method_Table%add_method("vtk_scan_arrays",&
-        !    "py_vtk_scan_arrays",METH_VARARGS,&
-        !    c_funloc(py_vtk_scan_arrays))
-        !call method_Table%add_method("vtk_scan_limits",&
-        !    "py_vtk_scan_limits",METH_VARARGS,&
-        !    c_funloc(py_vtk_scan_limits))
+        ! In case of exception return C_NULL_PTR
+        resul = C_NULL_PTR
 
-        ! Build mod_Def
-        m = mod_Def%init("pycrysfml08","A Python API for CrysFML08",method_Table)
+        ! Unwrap_arguments
+        call unsafe_cast_from_c_ptr(args,args_ptr)
+        if (ierror == 0) ierror = args%getitem(item,0)
+        if (ierror == 0) ierror = cast(wave,item)
+        if (ierror == 0) ierror = args%getitem(item,1)
+        if (ierror == 0) ierror = cast(ch,item)
+        if (ierror == 0) ierror = args%getitem(item,2)
+        if (ierror == 0) ierror = cast(ph,item)
+        if (ierror == 0) ierror = args%getitem(item,3)
+        if (ierror == 0) ierror = cast(ga,item)
+        if (ierror == 0) ierror = args%getitem(item,4)
+        if (ierror == 0) ierror = cast(om,item)
+        if (ierror == 0) ierror = args%getitem(item,5)
+        if (ierror == 0) ierror = cast(nu,item)
+        if (ierror /= 0) then
+            err_cfml%ierr = -1
+            err_cfml%msg = 'py_z1frmd: Error getting arguments'
+        end if
 
-    end function Init
+        ! Call CrysFML procedure
+        if (ierror == 0) z1 = z1frmd(wave,ch,ph,ga,om,nu)
+        if (ierror == 0) ierror = err_cfml%ierr
 
-end module api_init
+        ! Return tuple
+        if (ierror == 0) then
+            ierror = tuple_create(ret,3)
+            ierror = ret%setitem(0,ierr)
+            ierror = ret%setitem(1,trim(err_cfml%msg))
+            ierror = ndarray_create(nd_z1,z1)
+            ierror = ret%setitem(2,nd_z1)
+        else
+            ierr   = ierror
+            ierror = tuple_create(ret,2)
+            ierror = ret%setitem(0,ierr)
+            ierror = ret%setitem(1,trim(err_cfml%msg))
+        end if
+        resul = ret%get_c_ptr()
+
+    end function py_z1frmd
+
+    function py_z1frnb(self_ptr,args_ptr) result(resul) bind(c)
+        !! author: ILL Scientific Computing Group
+        !! date: 24/03/2023
+        !! display: public
+        !! proc_internals: true
+        !! summary: Wrapper for function z1frnb.
+        !! summary: Compute the scattering vector from angles and wavelength for normal-beam geometry
+        !!
+        !! ARGS_PTR = (wave,ga,om,nu)
+        !!
+        !! RESUL = (ierr,err_cfml%msg,nd_z1)
+        !  --------           -----------         -----------
+        !  Variable           Python type         Description
+        !  --------           -----------         -----------
+        !  wave               float               wavelength
+        !  ga                 float               gamma (degrees)
+        !  om                 float               omega (degrees)
+        !  nu                 float               nu (degrees)
+        !  ierr               integer             if ierr /= 0, an error occurred
+        !  err_cfml%msg       string              error message
+        !  nd_z1              ndarray(3;float32)  scattering vector
+
+        ! Arguments
+        type(c_ptr), value :: self_ptr
+        type(c_ptr), value :: args_ptr
+        type(c_ptr)        :: resul
+
+        ! Python / Fortran interface variables
+        real          :: wave  !! wavelength
+        real          :: ga    !! gamma angle (degrees)
+        real          :: om    !! omega angle (degress)
+        real          :: nu    !! nu angle (degrees)
+        integer       :: ierr  !! error flag
+        type(ndarray) :: nd_z1 !! Scattering vector
+
+        ! Other local variables
+        integer :: ierror
+        real(kind=cp), dimension(3) :: z1 ! scattering vector
+        type(object) :: item
+        type(tuple) :: args,ret
+
+        ! Reset error variable
+        ierr = 0
+        ierror = 0
+        call clear_error()
+
+        ! In case of exception return C_NULL_PTR
+        resul = C_NULL_PTR
+
+        ! Unwrap_arguments
+        call unsafe_cast_from_c_ptr(args,args_ptr)
+        if (ierror == 0) ierror = args%getitem(item,0)
+        if (ierror == 0) ierror = cast(wave,item)
+        if (ierror == 0) ierror = args%getitem(item,1)
+        if (ierror == 0) ierror = cast(ga,item)
+        if (ierror == 0) ierror = args%getitem(item,2)
+        if (ierror == 0) ierror = cast(om,item)
+        if (ierror == 0) ierror = args%getitem(item,3)
+        if (ierror == 0) ierror = cast(nu,item)
+        if (ierror /= 0) then
+            err_cfml%ierr = -1
+            err_cfml%msg = 'py_z1frnb: Error getting arguments'
+        end if
+
+        ! Call CrysFML procedure
+        if (ierror == 0) z1 = z1frnb(wave,ga,om,nu)
+        if (ierror == 0) ierror = err_cfml%ierr
+
+        ! Return tuple
+        if (ierror == 0) then
+            ierror = tuple_create(ret,3)
+            ierror = ret%setitem(0,ierr)
+            ierror = ret%setitem(1,trim(err_cfml%msg))
+            ierror = ndarray_create(nd_z1,z1)
+            ierror = ret%setitem(2,nd_z1)
+        else
+            ierr   = ierror
+            ierror = tuple_create(ret,2)
+            ierror = ret%setitem(0,ierr)
+            ierror = ret%setitem(1,trim(err_cfml%msg))
+        end if
+        resul = ret%get_c_ptr()
+
+    end function py_z1frnb
+
+end module py_cfml_sxtal_geom

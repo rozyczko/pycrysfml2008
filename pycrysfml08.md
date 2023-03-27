@@ -1,6 +1,5 @@
 ---
 author: Institute Laue Langevin
-exclude: forpy_mod.F90
 display: public
 project: PyCrysFML08
 ---

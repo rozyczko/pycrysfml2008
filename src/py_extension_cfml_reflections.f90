@@ -12,9 +12,6 @@
 ! Copyright (C) 2020-2022  Institut Laue-Langevin (ILL), Grenoble, FRANCE
 !
 ! Authors: ILL Scientific Computing Group (ILL)
-!          Juan Rodriguez-Carvajal (ILL)
-!
-!
 !
 ! This library is free software; you can redistribute it and/or
 ! modify it under the terms of the GNU Lesser General Public
@@ -38,15 +35,15 @@ module extension_cfml_reflections
 
     use cfml_globaldeps, only: clear_error,err_cfml
     use cfml_gspacegroups, only: spg_type,set_spacegroup
-    use cfml_messages, only: set_python_error_flag
     use cfml_metrics, only: cell_g_type,set_crystal_cell
-    use cfml_reflections, only: reflist_type,hkl_gen_sxtal,wrap_reflist_type
+    use cfml_reflections, only: reflist_type,hkl_gen_sxtal
+    use cfml_python, only: wrap_reflist_type
 
     implicit none
 
     contains
 
-    function py_generate_reflections(self_ptr,args_ptr) result(resul) bind(c)
+    function py_hkls_from_spg(self_ptr,args_ptr) result(resul) bind(c)
         !! author: ILL Scientific Computing Group
         !! date: 27/03/2023
         !! display: public
@@ -96,8 +93,13 @@ module extension_cfml_reflections
         type(object) :: item
         type(tuple) :: args,ret
 
-        call clear_error()
+        ! Reset error variable
+        ierr   = 0
         ierror = 0
+        call clear_error()
+
+        ! In case of exception return C_NULL_PTR
+        resul = C_NULL_PTR
 
         ! Get arguments
         call unsafe_cast_from_c_ptr(args,args_ptr)
@@ -111,34 +113,34 @@ module extension_cfml_reflections
         if (ierror == 0) ierror = args%getitem(item,3)
         if (ierror == 0) ierror = cast(stlmax,item)
         if (ierror /= 0) then
-            err_cfml%Ierr = -1
-            err_cfml%Msg = 'py_generate_reflections: Error getting arguments'
-            call set_python_error_flag(ierror)
+            err_cfml%ierr = -1
+            err_cfml%msg = 'py_hkls_from_spg: Error getting arguments'
         end if
 
         if (ierror == 0) call set_spacegroup('P 1',spg)
-        if (ierror == 0) call set_python_error_flag(ierror)
-        if (ierror == 0) call Set_Crystal_Cell(p_cell(1:3),p_cell(4:6),cell)
-        if (ierror == 0) call set_python_error_flag(ierror)
-        if (ierror == 0) call HKL_Gen_Sxtal(cell,spg,stlmin,stlmax,hkls)
-        if (ierror == 0) call set_python_error_flag(ierror)
+        if (ierror == 0) ierror = err_cfml%ierr
+        if (ierror == 0) call set_crystal_cell(p_cell(1:3),p_cell(4:6),cell)
+        if (ierror == 0) ierror = err_cfml%ierr
+        if (ierror == 0) call hkl_gen_sxtal(cell,spg,stlmin,stlmax,hkls)
+        if (ierror == 0) ierror = err_cfml%ierr
         if (ierror == 0) ierror = dict_create(di_hkls)
-        if (ierror == 0) call wrap_reflist_type(hkls,di_hkls,ierror)
+        if (ierror == 0) call wrap_reflist_type(hkls,di_hkls)
+        if (ierror == 0) ierror = err_cfml%ierr
 
         ! Return tuple
-        ierr = ierror
         if (ierror == 0) then
             ierror = tuple_create(ret,3)
             ierror = ret%setitem(0,ierr)
             ierror = ret%setitem(1,trim(err_cfml%msg))
             ierror = ret%setitem(2,di_hkls)
         else
+            ierr = ierror
             ierror = tuple_create(ret,2)
             ierror = ret%setitem(0,ierr)
             ierror = ret%setitem(1,trim(err_cfml%msg))
         end if
         resul = ret%get_c_ptr()
 
-    end function py_generate_reflections
+    end function py_hkls_from_spg
 
 end module extension_cfml_reflections
