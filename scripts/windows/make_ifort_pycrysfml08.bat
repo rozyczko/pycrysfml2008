@@ -32,25 +32,22 @@ rem License along with this library; if not, see <http://www.gnu.org/licenses/>.
 rem
 rem -------------------------------------------------------------
 
-echo Compiling py_cfml_sxtal_geom.f90
-ifort /c /fpp /nologo /Warn ..\..\src\py_cfml_sxtal_geom.f90 /I%CRYSFML08_INSTALL%\include
-echo Compiling py_extension_cfml_sxtal_geom.f90
-ifort /c /fpp /nologo /Warn ..\..\src\py_extension_cfml_sxtal_geom.f90 /I%CRYSFML08_INSTALL%\include
-rem echo Compiling py_extension_cfml_ioform.f90
-rem ifort /c /fpp /nologo /Warn ..\..\src\py_extension_cfml_ioform.f90 /I%CRYSFML08_INSTALL%\include
-rem echo Compiling py_extension_cfml_diffpatt.f90
-rem ifort /c /fpp /nologo /Warn ..\..\src\py_extension_cfml_diffpatt.f90 /I%CRYSFML08_INSTALL%\include
-rem echo Compiling py_extension_cfml_export_vtk.f90
-rem ifort /c /fpp /nologo /Warn ..\..\src\py_extension_cfml_export_vtk.f90 /I%CRYSFML08_INSTALL%\include
-echo Compiling py_extension_cfml_reflections.f90
-ifort /c /fpp /nologo /Warn ..\..\src\py_extension_cfml_reflections.f90 /I%CRYSFML08_INSTALL%\include
-echo Compiling api_init.f90
-ifort /c /fpp /nologo /Warn ..\..\src\api_init.f90 /I%CRYSFML08_INSTALL%\include
-
-echo Linking
-link *.obj /out:"pycrysfml08.dll" /libpath:%CRYSFML08_INSTALL%\lib /dll %LIBPYTHON% libCrysFML08.a
-if not exist ..\..\dll (
-    mkdir ..\..\dll
+if not exist ..\..\python (
+    mkdir ..\..\python
 )
-move pycrysfml08.dll ..\..\dll\pycrysfml08.pyd
+
+rem CFML_Sxtal_Geom
+echo Building py_cfml_sxtal_geom.pyd
+ifort /c /fpp /nologo ..\..\src\py_extension_cfml_sxtal_geom.f90 /I%CRYSFML08_INSTALL%\include
+ifort /c /fpp /nologo ..\..\src\py_cfml_sxtal_geom.f90 /I%CRYSFML08_INSTALL%\include
+link py_extension_cfml_sxtal_geom.obj py_cfml_sxtal_geom.obj /out:"py_cfml_sxtal_geom.dll" /libpath:%CRYSFML08_INSTALL%\lib /dll %LIBPYTHON% libCrysFML08.a
+move py_cfml_sxtal_geom.dll ..\..\pycrysfml08\py_cfml_sxtal_geom.pyd
+
+rem CFML_Reflections
+echo Building py_extension_cfml_reflections.f90
+ifort /c /fpp /nologo /Warn ..\..\src\py_extension_cfml_reflections.f90 /I%CRYSFML08_INSTALL%\include
+ifort /c /fpp /nologo /Warn ..\..\src\py_cfml_reflections.f90 /I%CRYSFML08_INSTALL%\include
+link py_extension_cfml_reflections.obj py_cfml_reflections.obj /out:"py_cfml_reflections.dll" /libpath:%CRYSFML08_INSTALL%\lib /dll %LIBPYTHON% libCrysFML08.a
+move py_cfml_reflections.dll ..\..\python\py_cfml_reflections.pyd
+
 del *.obj *.mod *.exp *.lib

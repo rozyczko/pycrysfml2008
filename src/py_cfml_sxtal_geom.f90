@@ -36,10 +36,48 @@ module py_cfml_sxtal_geom
     use cfml_globaldeps
     use cfml_messages
     use cfml_sxtal_geom
+    use extension_cfml_sxtal_geom
 
     implicit none
 
+    type(PythonModule), save :: mod_sxtal_geom
+    type(PythonMethodTable), save :: table_sxtal_geom
+
     contains
+
+    ! Initialization function for Python 3
+    ! Called when importing module
+    ! Must use bind(c, name="PyInit_<module name>")
+    ! Return value must be type(c_ptr),
+    ! use the return value of PythonModule%init
+    function PyInit_py_cfml_sxtal_geom() bind(c,name="PyInit_py_cfml_sxtal_geom") result(m)
+    !DEC$ ATTRIBUTES DLLEXPORT :: PyInit_py_cfml_sxtal_geom
+
+        ! Local variables
+        type(c_ptr) :: m
+
+        m = Init()
+
+    end function PyInit_py_cfml_sxtal_geom
+
+    function Init() result(m)
+
+        ! Local variables
+        type(c_ptr) :: m
+        integer :: ierror
+
+        ierror = Forpy_Initialize()
+
+        ! Build method table
+        call table_sxtal_geom%init(3)
+        call table_sxtal_geom%add_method("z1frmd","z1frmd",METH_VARARGS,c_funloc(py_z1frmd))
+        call table_sxtal_geom%add_method("z1frnb","z1frnb",METH_VARARGS,c_funloc(py_z1frnb))
+        call table_sxtal_geom%add_method("ganu_from_xz","py_ganu_from_xz",METH_VARARGS,c_funloc(py_ganu_from_xz))
+
+        ! Build mod_sxtal_geom
+        m = mod_sxtal_geom%init("py_cfml_sxtal_geom","A Python API for CrysFML08",table_sxtal_geom)
+
+    end function Init
 
     function py_z1frmd(self_ptr,args_ptr) result(resul) bind(c)
         !! author: ILL Scientific Computing Group
