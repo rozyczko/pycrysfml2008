@@ -32,10 +32,6 @@ rem License along with this library; if not, see <http://www.gnu.org/licenses/>.
 rem
 rem -------------------------------------------------------------
 
-if not exist ..\..\python (
-    mkdir ..\..\python
-)
-
 rem CFML_Sxtal_Geom
 echo Building py_cfml_sxtal_geom.pyd
 ifort /c /fpp /nologo ..\..\src\py_extension_cfml_sxtal_geom.f90 /I%CRYSFML08_INSTALL%\include
@@ -44,10 +40,16 @@ link py_extension_cfml_sxtal_geom.obj py_cfml_sxtal_geom.obj /out:"py_cfml_sxtal
 move py_cfml_sxtal_geom.dll ..\..\pycrysfml08\py_cfml_sxtal_geom.pyd
 
 rem CFML_Reflections
-echo Building py_extension_cfml_reflections.f90
+echo Building py_extension_cfml_reflections.pyd
 ifort /c /fpp /nologo /Warn ..\..\src\py_extension_cfml_reflections.f90 /I%CRYSFML08_INSTALL%\include
 ifort /c /fpp /nologo /Warn ..\..\src\py_cfml_reflections.f90 /I%CRYSFML08_INSTALL%\include
 link py_extension_cfml_reflections.obj py_cfml_reflections.obj /out:"py_cfml_reflections.dll" /libpath:%CRYSFML08_INSTALL%\lib /dll %LIBPYTHON% libCrysFML08.a
-move py_cfml_reflections.dll ..\..\python\py_cfml_reflections.pyd
+move py_cfml_reflections.dll ..\..\pycrysfml08\py_cfml_reflections.pyd
+
+rem CFML_VTK
+echo Building py_cfml_vtk.pyd
+ifort /c /fpp /nologo /Warn ..\..\src\py_cfml_vtk.f90 /I%CRYSFML08_INSTALL%\include
+link py_cfml_vtk.obj /out:"py_cfml_vtk.dll" /libpath:%CRYSFML08_INSTALL%\lib /dll %LIBPYTHON% libCrysFML08.a
+move py_cfml_vtk.dll ..\..\pycrysfml08\py_cfml_vtk.pyd
 
 del *.obj *.mod *.exp *.lib
