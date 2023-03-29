@@ -9,7 +9,8 @@ cd %CRYSFML08_INSTALL%\\libC
 move crysfml.lib libcrysfml08.a
 cd %CI_PROJECT_DIR%
 
-call %CI_PROJECT_DIR%\\scripts\\windows\\make_ifort_pycrysfml08.bat
+cd %CI_PROJECT_DIR%\\scripts\\windows
+call make_ifort_pycrysfml08.bat
 set STATUS=%ERRORLEVEL%
 rem Exit now
 if %STATUS% neq 0 (
@@ -17,9 +18,3 @@ if %STATUS% neq 0 (
     exit %STATUS%
 )
 
-del /s /q /f %CI_PROJECT_DIR%\\Dist
-md %CI_PROJECT_DIR%\\Dist
-xcopy /s /i /q %CI_PROJECT_DIR%\\DistLS\\Windows_64bits %CI_PROJECT_DIR%\\Dist\\Esmeralda
-xcopy /s /i /q %CI_PROJECT_DIR%\\DistLS\\Docs %CI_PROJECT_DIR%\\Dist\\Docs
-xcopy /s /i /q %CI_PROJECT_DIR%\\DistLS\\Examples %CI_PROJECT_DIR%\\Dist\\Examples
-copy %CI_PROJECT_DIR%\\DistLS\\bg.png %CI_PROJECT_DIR%\\Dist\\Esmeralda\\bg.png
