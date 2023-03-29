@@ -36,7 +36,6 @@ module py_cfml_sxtal_geom
     use cfml_globaldeps
     use cfml_messages
     use cfml_sxtal_geom
-    use extension_cfml_sxtal_geom
 
     implicit none
 
@@ -70,14 +69,143 @@ module py_cfml_sxtal_geom
 
         ! Build method table
         call table_sxtal_geom%init(3)
-        call table_sxtal_geom%add_method("z1frmd","z1frmd",METH_VARARGS,c_funloc(py_z1frmd))
-        call table_sxtal_geom%add_method("z1frnb","z1frnb",METH_VARARGS,c_funloc(py_z1frnb))
-        call table_sxtal_geom%add_method("ganu_from_xz","py_ganu_from_xz",METH_VARARGS,c_funloc(py_ganu_from_xz))
+        call table_sxtal_geom%add_method("ganu_from_xz","gamma and nu values from x,z pixel coordinates",METH_VARARGS,c_funloc(py_ganu_from_xz))
+        call table_sxtal_geom%add_method("z1frmd","scattering vector for 4C geometry",METH_VARARGS,c_funloc(py_z1frmd))
+        call table_sxtal_geom%add_method("z1frnb","scattering vector for NB geometry",METH_VARARGS,c_funloc(py_z1frnb))
 
         ! Build mod_sxtal_geom
         m = mod_sxtal_geom%init("py_cfml_sxtal_geom","A Python API for CrysFML08",table_sxtal_geom)
 
     end function Init
+
+    function py_ganu_from_xz(self_ptr,args_ptr) result(resul) bind(c)
+        !! author: ILL Scientific Computing Group
+        !! date: 23/03/2023
+        !! display: public
+        !! proc_internals: true
+        !! summary: Compute the gamma and nu values from x,z coordinates on a 2D detector
+        !
+        !! Compute the gamma and nu values from x,z coordinates on a 2D detector
+        !!
+        !! ARGS_PTR = (px,pz,ga_D,nu_D,ipsd,npix,pisi,dist_samp_detector,det_offsets,origin,blfr)
+        !   --------           -----------         -----------
+        !   Variable           Python type         Description
+        !   --------           -----------         -----------
+        !   px                 float               x coordinate, in pixels
+        !   pz                 float               z coordinate, in pixels
+        !   ga_D               float               gamma angle of the center of the detector, in degrees
+        !   nu_D               float               nu    angle of the center of the detector, in degrees
+        !   ipsd               integer             detector type
+        !                                          2: flat detector
+        !                                          3: horizontal banana
+        !   npix               ndarray(2,int32)    number of horizontal and vertical pixels
+        !   pisi               ndarray(2,float32)  horizontal and vertical pixel sizes
+        !   dist_samp_detector float               sample detector distance
+        !   det_offsets        ndarray(3,float32)  x, y and z detector offsets
+        !   origin             integer             origin for numbering pixels
+        !                                          0: top    left
+        !                                          1: top    right
+        !                                          2: bottom right
+        !                                          3: bottom left
+        !   blfr               integer             Busing-Levy frame
+        !                                          0: z-up
+        !                                          1: z-down
+        !! RESUL = (ierr,ga_P,nu_P)
+        !   --------           -----------         -----------
+        !   Variable           Python type         Description
+        !   --------           -----------         -----------
+        !   ierr               integer             if ierr /= 0, an error occurred
+        !   err_cfml%msg       string              error message
+        !   ga_P               float               gamma value in degrees
+        !   nu_P               float               nu    value in degrees
+
+        ! Arguments
+        type(c_ptr), value :: self_ptr
+        type(c_ptr), value :: args_ptr
+        type(c_ptr)        :: resul
+
+        ! Variables in args_ptr
+        real          :: px                  !! x coordinate, in pixels
+        real          :: pz                  !! z coordinate, in pixels
+        real          :: ga_D                !! gamma angle of the center of the detector, in degrees
+        real          :: nu_D                !! nu    angle of the center of the detector, in degrees
+        integer       :: ipsd                !! detector type
+        type(ndarray) :: nd_npix             !! number of horizontal and vertical pixels
+        type(ndarray) :: nd_pisi             !! horizontal and vertical pixel sizes
+        real          :: dist_samp_detector  !! sample detector distance
+        type(ndarray) :: nd_det_offsets      !! x, y and z detector offsets
+        integer       :: origin              !! origin for numbering pixels
+        integer       :: blfr                !! Busing-Levy frame
+
+        ! Variables in resul
+        integer :: ierr                      !! if ierr /= 0, an error ocurred
+        real    :: ga_P                      !! gamma value in degrees
+        real    :: nu_P                      !! nu    value in degrees
+
+        ! Local variables
+        integer :: ierror
+        integer, dimension(:), pointer :: p_npix
+        real :: x_D,z_D
+        real, dimension(:), pointer :: p_pisi,p_det_offsets
+
+        type(object) :: item
+        type(tuple) :: args,ret
+
+        call Clear_Error()
+        ierror = 0
+
+        ! Get arguments
+        call unsafe_cast_from_c_ptr(args,args_ptr)
+        if (ierror == 0) ierror = args%getitem(item,0)
+        if (ierror == 0) ierror = cast(px,item)
+        if (ierror == 0) ierror = args%getitem(item,1)
+        if (ierror == 0) ierror = cast(pz,item)
+        if (ierror == 0) ierror = args%getitem(item,2)
+        if (ierror == 0) ierror = cast(ga_D,item)
+        if (ierror == 0) ierror = args%getitem(item,3)
+        if (ierror == 0) ierror = cast(nu_D,item)
+        if (ierror == 0) ierror = args%getitem(item,4)
+        if (ierror == 0) ierror = cast(ipsd,item)
+        if (ierror == 0) ierror = args%getitem(item,5)
+        if (ierror == 0) ierror = cast(nd_npix,item)
+        if (ierror == 0) ierror = nd_npix%get_data(p_npix)
+        if (ierror == 0) ierror = args%getitem(item,6)
+        if (ierror == 0) ierror = cast(nd_pisi,item)
+        if (ierror == 0) ierror = nd_pisi%get_data(p_pisi)
+        if (ierror == 0) ierror = args%getitem(item,7)
+        if (ierror == 0) ierror = cast(dist_samp_detector,item)
+        if (ierror == 0) ierror = args%getitem(item,8)
+        if (ierror == 0) ierror = cast(nd_det_offsets,item)
+        if (ierror == 0) ierror = nd_det_offsets%get_data(p_det_offsets)
+        if (ierror == 0) ierror = args%getitem(item,9)
+        if (ierror == 0) ierror = cast(origin,item)
+        if (ierror == 0) ierror = args%getitem(item,10)
+        if (ierror == 0) ierror = cast(blfr,item)
+        if (ierror /= 0) then
+            err_cfml%ierr = -1
+            err_cfml%msg = 'py_ganu_from_xz: Error getting arguments'
+        end if
+
+        ! Compute ga_P and nu_P
+        if (ierror == 0) call ganu_from_xz(px,pz,ga_D,nu_D,ipsd,p_npix,p_pisi,dist_samp_detector,p_det_offsets,origin,blfr,ga_P,nu_P)
+        if (ierror == 0) ierror = err_cfml%ierr
+
+        ! Return tuple
+        if (ierror == 0) then
+            ierror = tuple_create(ret,4)
+            ierror = ret%setitem(0,0)
+            ierror = ret%setitem(1,trim(err_cfml%msg))
+            ierror = ret%setitem(2,ga_P)
+            ierror = ret%setitem(3,nu_P)
+        else
+            ierr = ierror
+            ierror = tuple_create(ret,2)
+            ierror = ret%setitem(0,ierr)
+            ierror = ret%setitem(1,trim(err_cfml%msg))
+        end if
+        resul = ret%get_c_ptr()
+
+    end function py_ganu_from_xz
 
     function py_z1frmd(self_ptr,args_ptr) result(resul) bind(c)
         !! author: ILL Scientific Computing Group

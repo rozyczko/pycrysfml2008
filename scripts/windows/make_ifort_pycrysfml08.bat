@@ -34,9 +34,8 @@ rem -------------------------------------------------------------
 
 rem CFML_Sxtal_Geom
 echo Building py_cfml_sxtal_geom.pyd
-ifort /c /fpp /nologo ..\..\src\py_extension_cfml_sxtal_geom.f90 /I%CRYSFML08_INSTALL%\include
 ifort /c /fpp /nologo ..\..\src\py_cfml_sxtal_geom.f90 /I%CRYSFML08_INSTALL%\include
-link py_extension_cfml_sxtal_geom.obj py_cfml_sxtal_geom.obj /out:"py_cfml_sxtal_geom.dll" /libpath:%CRYSFML08_INSTALL%\lib /dll %LIBPYTHON% libCrysFML08.a
+link py_cfml_sxtal_geom.obj /out:"py_cfml_sxtal_geom.dll" /libpath:%CRYSFML08_INSTALL%\lib /dll %LIBPYTHON% libCrysFML08.a
 move py_cfml_sxtal_geom.dll ..\..\pycrysfml08\py_cfml_sxtal_geom.pyd
 
 rem CFML_Reflections
