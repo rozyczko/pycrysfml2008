@@ -24,8 +24,7 @@ build-job-windows:       # This job runs in the build stage, which runs first.
   stage: build
   script:
     - echo "Compiling the code..."
-    - ./BuildServer/Machines/ci-sci-win-1.bat
-    - ./BuildServer/build_windows.bat
+    - ./BuildServer/Machines/ci-sci-win-1.bat && ./BuildServer/build_windows.bat
     - echo "Compile complete."
   tags:
     - windows-10
