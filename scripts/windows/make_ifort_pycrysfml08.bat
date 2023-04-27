@@ -31,28 +31,28 @@ rem -------------------------------------------------------------
 
 rem CFML_Sxtal_Geom
 echo Building py_cfml_sxtal_geom.pyd
-ifort /c /fpp /check /nologo ..\..\src\py_cfml_sxtal_geom.f90 /I%CRYSFML08_INSTALL%\include
-link py_cfml_sxtal_geom.obj /out:"py_cfml_sxtal_geom.dll" /libpath:%CRYSFML08_INSTALL%\lib /dll %LIBPYTHON% libCrysFML08.a
+ifort /c /fpp /check /nologo ..\..\src\py_cfml_sxtal_geom.f90 /I%CRYSFML08_INSTALL%\libC
+link py_cfml_sxtal_geom.obj /out:"py_cfml_sxtal_geom.dll" /libpath:%CRYSFML08_INSTALL%\libC /dll %LIBPYTHON% libCrysFML08.a
 move py_cfml_sxtal_geom.dll ..\..\pycrysfml08\py_cfml_sxtal_geom.pyd
 
 rem CFML_DiffPatt
 echo Building py_cfml_diffpatt.pyd
-ifort /c /fpp /nologo /Warn ..\..\src\py_extension_cfml_diffpatt.f90 /I%CRYSFML08_INSTALL%\include
-ifort /c /fpp /nologo /Warn ..\..\src\py_cfml_diffpatt.f90 /I%CRYSFML08_INSTALL%\include
-link py_extension_cfml_diffpatt.obj py_cfml_diffpatt.obj /out:"py_cfml_diffpatt.dll" /libpath:%CRYSFML08_INSTALL%\lib /dll %LIBPYTHON% libCrysFML08.a
+ifort /c /fpp /nologo /Warn ..\..\src\py_extension_cfml_diffpatt.f90 /I%CRYSFML08_INSTALL%\libC
+ifort /c /fpp /nologo /Warn ..\..\src\py_cfml_diffpatt.f90 /I%CRYSFML08_INSTALL%\libC
+link py_extension_cfml_diffpatt.obj py_cfml_diffpatt.obj /out:"py_cfml_diffpatt.dll" /libpath:%CRYSFML08_INSTALL%\libC /dll %LIBPYTHON% libCrysFML08.a
 move py_cfml_diffpatt.dll ..\..\pycrysfml08\py_cfml_diffpatt.pyd
 
 rem CFML_Reflections
 echo Building py_cfml_reflections.pyd
-ifort /c /fpp /nologo /Warn ..\..\src\py_extension_cfml_reflections.f90 /I%CRYSFML08_INSTALL%\include
-ifort /c /fpp /nologo /Warn ..\..\src\py_cfml_reflections.f90 /I%CRYSFML08_INSTALL%\include
-link py_extension_cfml_reflections.obj py_cfml_reflections.obj /out:"py_cfml_reflections.dll" /libpath:%CRYSFML08_INSTALL%\lib /dll %LIBPYTHON% libCrysFML08.a
+ifort /c /fpp /nologo /Warn ..\..\src\py_extension_cfml_reflections.f90 /I%CRYSFML08_INSTALL%\libC
+ifort /c /fpp /nologo /Warn ..\..\src\py_cfml_reflections.f90 /I%CRYSFML08_INSTALL%\libC
+link py_extension_cfml_reflections.obj py_cfml_reflections.obj /out:"py_cfml_reflections.dll" /libpath:%CRYSFML08_INSTALL%\libC /dll %LIBPYTHON% libCrysFML08.a
 move py_cfml_reflections.dll ..\..\pycrysfml08\py_cfml_reflections.pyd
 
 rem CFML_VTK
 echo Building py_cfml_vtk.pyd
-ifort /c /fpp /nologo /Warn ..\..\src\py_cfml_vtk.f90 /I%CRYSFML08_INSTALL%\include
-link py_cfml_vtk.obj /out:"py_cfml_vtk.dll" /libpath:%CRYSFML08_INSTALL%\lib /dll %LIBPYTHON% libCrysFML08.a
+ifort /c /fpp /nologo /Warn ..\..\src\py_cfml_vtk.f90 /I%CRYSFML08_INSTALL%\libC
+link py_cfml_vtk.obj /out:"py_cfml_vtk.dll" /libpath:%CRYSFML08_INSTALL%\libC /dll %LIBPYTHON% libCrysFML08.a
 move py_cfml_vtk.dll ..\..\pycrysfml08\py_cfml_vtk.pyd
 
 del *.obj *.mod *.exp *.lib
