@@ -10,7 +10,7 @@ mkdir build
 cd build
 cmake -D ARCH32=OFF -D PYTHON_API=OFF -D CMAKE_BUILD_TYPE=Debug -D CMAKE_Fortran_COMPILER=ifort -D CMAKE_INSTALL_PREFIX=${CRYSFML08_INSTALL} -D CRYSFML_PREFIX=LibC ..
 cmake --build .
-cmake --install
+make install
 
 cd $CRYSFML08_INSTALL/libC
 ln -s libcrysfml.a libcrysfml08.a
