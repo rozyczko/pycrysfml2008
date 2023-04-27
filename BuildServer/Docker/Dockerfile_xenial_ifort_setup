@@ -15,7 +15,8 @@ RUN apt-get update && apt-get install -y wget \
                        apt-transport-https && \
     wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | apt-key add - && \
     apt-add-repository 'deb https://apt.kitware.com/ubuntu/ xenial main' && \
-    apt-get update && apt-get install -y cmake
+    apt-get update && apt-get install -y cmake \
+    	    	      	      	      	 git
 RUN add-apt-repository ppa:deadsnakes/ppa
 RUN apt-get update && apt-get install -y python3.7-dev
 RUN apt-get update && apt-get install -y doxygen \
