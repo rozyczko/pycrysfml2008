@@ -45,7 +45,7 @@ mv py_cfml_diffpatt.so ../../pycrysfml08/
 echo Building CFML_Reflections
 ifort -fPIC -fpp -c ../../src/py_extension_cfml_reflections.f90 -I$CRYSFML08_INSTALL/libC
 ifort -fPIC -fpp -c ../../src/py_cfml_reflections.f90 -I$CRYSFML08_INSTALL/libC
-ifort -shared -o py_cfml_diffpatt.so py_extension_cfml_reflections.o py_cfml_reflections.o -L $CRYSFML08_INSTALL/libC -l crysfml08
+ifort -shared -o py_cfml_reflections.so py_extension_cfml_reflections.o py_cfml_reflections.o -L $CRYSFML08_INSTALL/libC -l crysfml08
 mv py_cfml_reflections.so ../../pycrysfml08/
 
 echo Building CFML_VTK
