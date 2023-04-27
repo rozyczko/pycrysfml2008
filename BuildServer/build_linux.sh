@@ -8,7 +8,7 @@ git clone https://code.ill.fr/rodriguez-carvajal/CrysFML2008 crysfml08
 cd crysfml08
 mkdir build
 cd build
-cmake -D ARCH32=OFF -D PYTHON_API=OFF -D CMAKE_BUILD_TYPE=Debug -D CMAKE_Fortran_COMPILER=ifort -D CMAKE_INSTALL_PREFIX=${CRYSFML08_INSTALL} -D CRYSFML_PREFIX=LibC ..
+cmake -D ARCH32=OFF -D PYTHON_API=OFF -D CMAKE_BUILD_TYPE=Debug -D CMAKE_Fortran_COMPILER=ifort -D CMAKE_INSTALL_PREFIX=${CRYSFML08_INSTALL} -D CRYSFML_PREFIX=libC ..
 cmake --build .
 make install
 
