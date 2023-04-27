@@ -33,24 +33,24 @@
 
 echo Building CFML_Sxtal_Geom
 ifort -fPIC -fpp -c ../../src/py_cfml_sxtal_geom.f90 -I$CRYSFML08_INSTALL/libC
-ifort -shared -o py_cfml_sxtal_geom.so py_cfml_sxtal_geom.o -L $CRYSFML08_INSTALL/libC -l CrysFML08
+ifort -shared -o py_cfml_sxtal_geom.so py_cfml_sxtal_geom.o -L $CRYSFML08_INSTALL/libC -l crysfml08
 mv py_cfml_sxtal_geom.so ../../pycrysfml08/
 
 echo Building CFML_DiffPatt
 ifort -fPIC -fpp -c ../../src/py_extension_cfml_diffpatt.f90 -I$CRYSFML08_INSTALL/libC
 ifort -fPIC -fpp -c ../../src/py_cfml_diffpatt.f90 -I$CRYSFML08_INSTALL/libC
-ifort -shared -o py_cfml_diffpatt.so py_extension_cfml_diffpatt.o py_cfml_diffpatt.o -L $CRYSFML08_INSTALL/libC -l CrysFML08
+ifort -shared -o py_cfml_diffpatt.so py_extension_cfml_diffpatt.o py_cfml_diffpatt.o -L $CRYSFML08_INSTALL/libC -l crysfml08
 mv py_cfml_diffpatt.so ../../pycrysfml08/
 
 echo Building CFML_Reflections
 ifort -fPIC -fpp -c ../../src/py_extension_cfml_reflections.f90 -I$CRYSFML08_INSTALL/libC
 ifort -fPIC -fpp -c ../../src/py_cfml_reflections.f90 -I$CRYSFML08_INSTALL/libC
-ifort -shared -o py_cfml_diffpatt.so py_extension_cfml_reflections.o py_cfml_reflections.o -L $CRYSFML08_INSTALL/libC -l CrysFML08
+ifort -shared -o py_cfml_diffpatt.so py_extension_cfml_reflections.o py_cfml_reflections.o -L $CRYSFML08_INSTALL/libC -l crysfml08
 mv py_cfml_reflections.so ../../pycrysfml08/
 
 echo Building CFML_VTK
 ifort -fPIC -fpp -c ../../src/py_cfml_vtk.f90 -I$CRYSFML08_INSTALL/libC
-ifort -shared -o py_cfml_vtk.so py_cfml_vtk.o -L $CRYSFML08_INSTALL/libC -l CrysFML08
+ifort -shared -o py_cfml_vtk.so py_cfml_vtk.o -L $CRYSFML08_INSTALL/libC -l crysfml08
 mv py_cfml_vtk.so ../../pycrysfml08/
 
 rm *.o *.mod
