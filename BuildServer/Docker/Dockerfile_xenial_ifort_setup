@@ -17,14 +17,7 @@ RUN apt-get update && apt-get install -y wget \
     apt-add-repository 'deb https://apt.kitware.com/ubuntu/ xenial main' && \
     apt-get update && apt-get install -y cmake \
     	    	      	      	      	 git
-RUN add-apt-repository ppa:deadsnakes/ppa
-RUN apt-get update && apt-get install -y python3.7-dev
-RUN apt-get update && apt-get install -y doxygen \
-                                         graphviz \
-                                         libaec-dev \
-                                         libz-dev \
-                                         libsz2
 
 RUN wget https://bootstrap.pypa.io/get-pip.py
-RUN python3.7 get-pip.py
-RUN python3.7 -m pip install numpy colorama
+RUN python3 get-pip.py
+RUN python3 -m pip install numpy colorama
