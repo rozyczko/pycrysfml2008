@@ -31,34 +31,26 @@
 #
 # -------------------------------------------------------------
 
-echo Compiling forpy_mod.F90
-ifort -fPIC -fpp -c $FORPY/forpy_mod.F90
-echo Compiling wraps_cfml_atoms.f90
-ifort -fPIC -fpp -c ../../src/wraps_cfml_atoms.f90 -I$CRYSFML08_INSTALL/include
-echo Compiling wraps_cfml_metrics.f90
-ifort -fPIC -fpp -c ../../src/wraps_cfml_metrics.f90 -I$CRYSFML08_INSTALL/include
-echo Compiling py_cfml_sxtal_geom.f90
-ifort -fPIC -fpp -c ../../src/py_cfml_sxtal_geom.f90 -I$CRYSFML08_INSTALL/include
-echo Compiling py_extension_cfml_messages.f90
-ifort -fPIC -fpp -c ../../src/py_extension_cfml_messages.f90 -I$CRYSFML08_INSTALL/include
-echo Compiling py_extension_cfml_ioform.f90
-ifort -fPIC -fpp -c ../../src/py_extension_cfml_ioform.f90 -I$CRYSFML08_INSTALL/include
-echo Compiling py_extension_cfml_sxtal_geom
-ifort -fPIC -fpp -c ../../src/py_extension_cfml_sxtal_geom.f90 -I$CRYSFML08_INSTALL/include
-echo Compiling py_extension_cfml_diffpatt
-ifort -fPIC -fpp -c ../../src/py_extension_cfml_diffpatt.f90 -I$CRYSFML08_INSTALL/include
-echo Compiling py_extension_cfml_export_vtk
-ifort -fPIC -fpp -c ../../src/py_extension_cfml_export_vtk.f90 -I$CRYSFML08_INSTALL/include
-echo Compiling py_extension_cfml_reflections
-ifort -fPIC -fpp -c ../../src/py_extension_cfml_reflections.f90 -I$CRYSFML08_INSTALL/include
-echo Compiling api_init
-ifort -fPIC -fpp -c ../../src/api_init.f90 -I$CRYSFML08_INSTALL/include
+echo Building CFML_Sxtal_Geom
+ifort -fPIC -fpp -c ../../src/py_cfml_sxtal_geom.f90 -I$CRYSFML08_INSTALL/libC
+ifort -shared -o py_cfml_sxtal_geom.so py_cfml_sxtal_geom.o -L $CRYSFML08_INSTALL/libC -l CrysFML08
+mv py_cfml_sxtal_geom.so ../../pycrysfml08/
 
-echo Linking
-ifort -shared -o pycrysfml08.so *.o -L $CRYSFML08_INSTALL/lib -l CrysFML08
+echo Building CFML_DiffPatt
+ifort -fPIC -fpp -c ../../src/py_extension_cfml_diffpatt.f90 -I$CRYSFML08_INSTALL/libC
+ifort -fPIC -fpp -c ../../src/py_cfml_diffpatt.f90 -I$CRYSFML08_INSTALL/libC
+ifort -shared -o py_cfml_diffpatt.so py_extension_cfml_diffpatt.o py_cfml_diffpatt.o -L $CRYSFML08_INSTALL/libC -l CrysFML08
+mv py_cfml_diffpatt.so ../../pycrysfml08/
 
-if [ ! -d ../../lib ]; then
-    mkdir ../../lib
-fi
-mv pycrysfml08.so ../../lib
+echo Building CFML_Reflections
+ifort -fPIC -fpp -c ../../src/py_extension_cfml_reflections.f90 -I$CRYSFML08_INSTALL/libC
+ifort -fPIC -fpp -c ../../src/py_cfml_reflections.f90 -I$CRYSFML08_INSTALL/libC
+ifort -shared -o py_cfml_diffpatt.so py_extension_cfml_reflections.o py_cfml_reflections.o -L $CRYSFML08_INSTALL/libC -l CrysFML08
+mv py_cfml_reflections.so ../../pycrysfml08/
+
+echo Building CFML_VTK
+ifort -fPIC -fpp -c ../../src/py_cfml_vtk.f90 -I$CRYSFML08_INSTALL/libC
+ifort -shared -o py_cfml_vtk.so py_cfml_vtk.o -L $CRYSFML08_INSTALL/libC -l CrysFML08
+mv py_cfml_vtk.so ../../pycrysfml08/
+
 rm *.o *.mod
