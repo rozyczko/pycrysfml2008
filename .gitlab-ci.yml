@@ -69,6 +69,11 @@ make:linux_ifort_xenial:
     - docker
     - sci
     - ubuntu
+  artifacts:
+    name: "PyCrysfml08 Ubuntu Xenial"
+    paths:
+      - "${CI_PROJECT_DIR}/pycrysfml08"
+    when: on_success
 
 make:linux_ifort:
   stage: make
@@ -80,4 +85,9 @@ make:linux_ifort:
     - docker
     - sci
     - ubuntu
+  artifacts:
+    name: "PyCrysfml08 Ubuntu Latest"
+    paths:
+      - "${CI_PROJECT_DIR}/pycrysfml08"
+    when: on_success
 
