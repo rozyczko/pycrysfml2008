@@ -87,7 +87,7 @@ module py_cfml_sxtal_geom
         !
         !! Compute the gamma and nu values from x,z coordinates on a 2D detector
         !!
-        !! ARGS_PTR = (px,pz,ga_D,nu_D,ipsd,npix,pisi,dist_samp_detector,det_offsets,origin,blfr)
+        !! ARGS_PTR = (px,pz,ga_D,nu_D,ipsd,npix,pisi,dist_samp_detector,det_offsets,origin)
         !   --------           -----------         -----------
         !   Variable           Python type         Description
         !   --------           -----------         -----------
@@ -107,9 +107,6 @@ module py_cfml_sxtal_geom
         !                                          1: top    right
         !                                          2: bottom right
         !                                          3: bottom left
-        !   blfr               integer             Busing-Levy frame
-        !                                          0: z-up
-        !                                          1: z-down
         !! RESUL = (ierr,ga_P,nu_P)
         !   --------           -----------         -----------
         !   Variable           Python type         Description
@@ -135,7 +132,6 @@ module py_cfml_sxtal_geom
         real          :: dist_samp_detector  !! sample detector distance
         type(ndarray) :: nd_det_offsets      !! x, y and z detector offsets
         integer       :: origin              !! origin for numbering pixels
-        integer       :: blfr                !! Busing-Levy frame
 
         ! Variables in resul
         integer :: ierr                      !! if ierr /= 0, an error ocurred
@@ -180,14 +176,9 @@ module py_cfml_sxtal_geom
         if (ierror == 0) ierror = args%getitem(item,9)
         if (ierror == 0) ierror = cast(origin,item)
         if (ierror == 0) ierror = args%getitem(item,10)
-        if (ierror == 0) ierror = cast(blfr,item)
-        if (ierror /= 0) then
-            err_cfml%ierr = -1
-            err_cfml%msg = 'py_ganu_from_xz: Error getting arguments'
-        end if
 
         ! Compute ga_P and nu_P
-        if (ierror == 0) call ganu_from_xz(px,pz,ga_D,nu_D,ipsd,p_npix,p_pisi,dist_samp_detector,p_det_offsets,origin,blfr,ga_P,nu_P)
+        if (ierror == 0) call ganu_from_xz(px,pz,ga_D,nu_D,ipsd,p_npix,p_pisi,dist_samp_detector,p_det_offsets,origin,ga_P,nu_P)
         if (ierror == 0) ierror = err_cfml%ierr
 
         ! Return tuple
