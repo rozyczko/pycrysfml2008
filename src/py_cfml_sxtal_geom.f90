@@ -68,8 +68,9 @@ module py_cfml_sxtal_geom
         ierror = Forpy_Initialize()
 
         ! Build method table
-        call table_sxtal_geom%init(3)
+        call table_sxtal_geom%init(4)
         call table_sxtal_geom%add_method("ganu_from_xz","gamma and nu values from x,z pixel coordinates",METH_VARARGS,c_funloc(py_ganu_from_xz))
+        call table_sxtal_geom%add_method("ubfrqcel","ub-matrix from a q-set and cell parameters",METH_VARARGS,c_funloc(py_ubfrqcel))
         call table_sxtal_geom%add_method("z1frmd","scattering vector for 4C geometry",METH_VARARGS,c_funloc(py_z1frmd))
         call table_sxtal_geom%add_method("z1frnb","scattering vector for NB geometry",METH_VARARGS,c_funloc(py_z1frnb))
 
@@ -175,7 +176,6 @@ module py_cfml_sxtal_geom
         if (ierror == 0) ierror = nd_det_offsets%get_data(p_det_offsets)
         if (ierror == 0) ierror = args%getitem(item,9)
         if (ierror == 0) ierror = cast(origin,item)
-        if (ierror == 0) ierror = args%getitem(item,10)
 
         ! Compute ga_P and nu_P
         if (ierror == 0) call ganu_from_xz(px,pz,ga_D,nu_D,ipsd,p_npix,p_pisi,dist_samp_detector,p_det_offsets,origin,ga_P,nu_P)
@@ -197,6 +197,129 @@ module py_cfml_sxtal_geom
         resul = ret%get_c_ptr()
 
     end function py_ganu_from_xz
+
+    function py_ubfrqcel(self_ptr,args_ptr) result(resul) bind(c)
+        !! author: ILL Scientific Computing Group
+        !! date: 23/03/2023
+        !! display: public
+        !! proc_internals: true
+        !! summary: Search an UB-matrix from a set of scattering vectors and fixed cell
+        !
+        !!  Generate a list of reflections for a given space group.
+        !!
+        !!  ARGS_PTR = (nd_q,nd_cell,npairs_max,angle_min,rtol,rfac_max)
+        !   --------           -----------           -----------
+        !   Variable           Python type           Description
+        !   --------           -----------           -----------
+        !   spg_id             string                space group (number || symbol)
+        !   nd_q               ndarray(nq,3;float32) set of scattering vectors
+        !   nd_cell            ndarray(6;float32)    cell parameters (a,b,c,alpha,beta,gamma)
+        !   nrefs_max          integer               maximum number of reflections used for finding pairs
+        !   npairs_max         integer               maximum number of pairs to be tested
+        !   angle_min          float                 minimum angle between reflections for testing
+        !   rtol               float                 tolerance in reciprocal space
+        !   rfac_max           float                 maximum allowed rfac
+        !   output_file        str                   Full path of the output file
+        !
+        !!  RESUL = (ierr,msg,nd_ub,nd_rfac)
+        !   --------           -----------         -----------
+        !   Variable           Python type         Description
+        !   --------           -----------         -----------
+        !   ierr               integer             if ierr /= 0, an error occurred
+        !   err_cfml%msg       string              error message
+        !   nd_ub              ndarray(nub,3,3)    ub-matrices
+        !                      np.float32
+        !                      order = F
+        !   nd_rfac            ndarray(nub)        r-factors
+        !                      np.float32
+
+        ! Arguments
+        type(c_ptr), value :: self_ptr
+        type(c_ptr), value :: args_ptr
+        type(c_ptr)        :: resul
+
+        ! Variables in args_ptr
+        character(len=:), allocatable :: spg_id      !! space group (number || symbol)
+        type(ndarray) :: nd_q                        !! scattering vectors, dim = [nq,3;np.float32)]
+        type(ndarray) :: nd_cell                     !! cell parameters (a,b,c,alpha,beta,gamma) dim = [6;np.float32]
+        real          :: rtol                        !! tolerance in reciprocal space
+        integer       :: nrefs_max                   !! maximum number of reflections used for finding pairs
+        integer       :: npairs_max                  !! maximum number of pairs to be tested
+        real          :: angle_min                   !! minimum angle between reflections for testing
+        real          :: rfac_max                    !! maximum allowed value for R-factor
+        type(ndarray) :: nd_ub                       !! ub-matrices, dim = [nub,3,3;np.float32)]
+        type(ndarray) :: nd_rfac                     !! r-factors dim = [nub6;np.float32]
+        character(len=:), allocatable :: output_file !! full path of the output file
+
+        ! Variables in resul
+        integer       :: ierr       !! if ierr /= 0, an error ocurred
+
+        ! Local variables
+        integer :: ierror,i ! Flag error
+        real, dimension(:), pointer :: p_cell
+        real, dimension(:,:), pointer :: p_q
+        real, dimension(:,:,:), allocatable :: ub   ! ub-matrices
+        real, dimension(:),     allocatable :: rfac ! rfactors for ub-matrices
+        type(object) :: item
+        type(tuple) :: args,ret
+
+        ! Reset error variable
+        ierr   = 0
+        ierror = 0
+        call clear_error()
+
+        ! In case of exception return C_NULL_PTR
+        resul = C_NULL_PTR
+
+        ! Get arguments
+        call unsafe_cast_from_c_ptr(args,args_ptr)
+        if (ierror == 0) ierror = args%getitem(item,0)
+        if (ierror == 0) ierror = cast(spg_id,item)
+        if (ierror == 0) ierror = args%getitem(item,1)
+        if (ierror == 0) ierror = cast(nd_q,item)
+        if (ierror == 0) ierror = nd_q%get_data(p_q,order='C')
+        if (ierror == 0) ierror = args%getitem(item,2)
+        if (ierror == 0) ierror = cast(nd_cell,item)
+        if (ierror == 0) ierror = nd_cell%get_data(p_cell)
+        if (ierror == 0) ierror = args%getitem(item,3)
+        if (ierror == 0) ierror = cast(nrefs_max,item)
+        if (ierror == 0) ierror = args%getitem(item,4)
+        if (ierror == 0) ierror = cast(npairs_max,item)
+        if (ierror == 0) ierror = args%getitem(item,5)
+        if (ierror == 0) ierror = cast(angle_min,item)
+        if (ierror == 0) ierror = args%getitem(item,6)
+        if (ierror == 0) ierror = cast(rtol,item)
+        if (ierror == 0) ierror = args%getitem(item,7)
+        if (ierror == 0) ierror = cast(rfac_max,item)
+        if (ierror == 0) ierror = args%getitem(item,8)
+        if (ierror == 0) ierror = cast(output_file,item)
+        if (ierror /= 0) then
+            err_cfml%ierr = -1
+            err_cfml%msg = 'py_ubfrqcel: Error getting arguments'
+        end if
+
+        ! Compute ga_P and nu_P
+        if (ierror == 0) call ubfrqcel(spg_id,p_q,p_cell,ub,rfac,nq_max_user=nrefs_max,npairs_max_user=npairs_max,angle_min_user=angle_min,rtol_user=rtol,rfac_max_user=rfac_max,output_file=output_file)
+        if (ierror == 0) ierror = err_cfml%ierr
+
+        ! Return tuple
+        if (ierror == 0) then
+            ierror = tuple_create(ret,4)
+            ierror = ret%setitem(0,0)
+            ierror = ret%setitem(1,trim(err_cfml%msg))
+            ierror = ndarray_create(nd_ub,ub)
+            ierror = ret%setitem(2,nd_ub)
+            ierror = ndarray_create(nd_rfac,rfac)
+            ierror = ret%setitem(3,nd_rfac)
+        else
+            ierr = ierror
+            ierror = tuple_create(ret,2)
+            ierror = ret%setitem(0,ierr)
+            ierror = ret%setitem(1,trim(err_cfml%msg))
+        end if
+        resul = ret%get_c_ptr()
+
+    end function py_ubfrqcel
 
     function py_z1frmd(self_ptr,args_ptr) result(resul) bind(c)
         !! author: ILL Scientific Computing Group
