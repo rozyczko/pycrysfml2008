@@ -33,10 +33,11 @@ module py_cfml_ioform
     use forpy_mod
     use iso_c_binding
 
-    use cfml_atoms, only: atlist_type
+    use cfml_atoms, only: atlist_type,matom_list_type
     use cfml_globaldeps, only: err_cfml,clear_error
-    use cfml_gSpaceGroups, only: spg_type
+    use cfml_gSpaceGroups, only: spg_type,set_spacegroup
     use cfml_ioform, only: read_xtal_structure
+    use cfml_kvec_Symmetry, only: magsymm_k_type,magnetic_domain_type
     use cfml_metrics, only: cell_g_type
     use cfml_python, only: wrap_atlist_type,wrap_cell_type,wrap_group_type
 
@@ -71,8 +72,9 @@ module py_cfml_ioform
         ierror = Forpy_Initialize()
 
         ! Build method table
-        call table_ioform%init(1)
+        call table_ioform%init(2)
         call table_ioform%add_method("read_xtal_structure","py_read_xtal_structure",METH_VARARGS,c_funloc(py_read_xtal_structure))
+        call table_ioform%add_method("set_spacegroup","py_set_spacegroup",METH_VARARGS,c_funloc(py_set_spacegroup))
 
         ! Build mod_ioform
         m = mod_ioform%init("py_cfml_ioform","A Python API for CrysFML08",table_ioform)
@@ -87,16 +89,24 @@ module py_cfml_ioform
         type(c_ptr)        :: resul
 
         ! Variables in args_ptr
-        character(len=:), allocatable :: filenam   !! Name of the file
-        type(dict)                    :: di_cell   !! Unit cell
-        type(dict)                    :: di_spg    !! Space group
-        type(dict)                    :: di_atm    !! Atoms
-        type(dict)                    :: di_kwargs !! Optional arguments
+        character(len=:), allocatable :: filenam    !! Name of the file
+        type(dict)                    :: di_cell    !! Unit cell
+        type(dict)                    :: di_spg     !! Space group
+        type(dict)                    :: di_atm     !! Atoms
+        type(dict)                    :: di_kwargs  !! Optional arguments
+        character(len=:), allocatable :: atm_typ    !! Atom type (optional)
+        type(dict)                    :: di_mgp     !!
+        type(dict)                    :: di_matm    !!
+        type(dict)                    :: di_mag_dom !!
+        integer                       :: iphase     !! Number of the phase
 
         ! Local variables
         integer, parameter :: NMANDATORY = 4
         integer :: ierror,narg
-        logical :: is_kwargs
+        logical :: is_kwargs,is_atm_typ,is_mgp,is_matm,is_mag_dom,is_iphase
+        type(magsymm_k_type) :: mgp
+        type(matom_list_type) :: matm
+        type(magnetic_domain_type) :: mag_dom
         type(object) :: item
         type(tuple) :: args,ret
         type(cell_g_type):: cell
@@ -105,6 +115,11 @@ module py_cfml_ioform
 
         ierror = 0
         is_kwargs = .false.
+        is_atm_typ = .false.
+        is_mgp = .false.
+        is_matm = .false.
+        is_mag_dom = .false.
+        is_iphase = .false.
         call clear_error()
 
         ! Use unsafe_cast_from_c_ptr to cast from c_ptr to tuple/dict
@@ -118,7 +133,7 @@ module py_cfml_ioform
             err_cfml%msg = 'py_read_xtal_structure: insufficient number of arguments'
         end if
 
-        ! Mandatory arguments
+        ! Get mandatory arguments
         if (ierror == 0) ierror = args%getitem(item,0)
         if (ierror == 0) ierror = cast(filenam,item)
         if (ierror == 0) ierror = args%getitem(item,1)
@@ -131,10 +146,48 @@ module py_cfml_ioform
         if (ierror == 0) ierror = cast(di_atm,item)
         if (ierror == 0) call di_atm%clear()
 
-        ! Optional arguments
+        ! Get optional arguments, if any
         if (ierror == 0 .and. narg > NMANDATORY) then
             ierror = args%getitem(item,4)
             if (ierror == 0) ierror = cast(di_kwargs,item)
+            if (ierror == 0) then
+                ierror = di_kwargs%getitem(atm_typ,"atm_typ")
+                if (ierror /= 0) then
+                    call err_clear
+                else
+                    is_atm_typ = .true.
+                end if
+                ierror = di_kwargs%getitem(item,"mgp")
+                if (ierror == 0) ierror = cast(di_mgp,item)
+                if (ierror /= 0) then
+                    call err_clear
+                else
+                    is_mgp = .true.
+                    call di_mgp%clear()
+                end if
+                ierror = di_kwargs%getitem(item,"matm")
+                if (ierror == 0) ierror = cast(di_matm,item)
+                if (ierror /= 0) then
+                    call err_clear
+                else
+                    is_matm = .true.
+                    call di_matm%clear()
+                end if
+                ierror = di_kwargs%getitem(item,"mag_dom")
+                if (ierror == 0) ierror = cast(di_mag_dom,item)
+                if (ierror /= 0) then
+                    call err_clear
+                else
+                    is_mag_dom = .true.
+                    call di_mag_dom%clear()
+                end if
+                ierror = di_kwargs%getitem(iphase,"iphase")
+                if (ierror /= 0) then
+                    call err_clear
+                else
+                    is_iphase = .true.
+                end if
+            end if
         end if
 
         if (ierror /= 0 .and. narg >= NMANDATORY) then
@@ -146,6 +199,18 @@ module py_cfml_ioform
             ! Call Fortran procedure
             if (narg == NMANDATORY) then
                 call read_xtal_structure(filenam,cell,spg,atm)
+            else if (is_iphase) then
+                if (is_atm_typ) then
+                    call read_xtal_structure(filenam,cell,spg,atm,atm_typ,iphase=iphase)
+                else
+                    call read_xtal_structure(filenam,cell,spg,atm,iphase=iphase)
+                end if
+            else if (is_mgp .and. is_matm) then
+                if (is_mag_dom) then
+                    call read_xtal_structure(filenam,cell,spg,atm,mgp=mgp,matm=matm,mag_dom=mag_dom)
+                else
+                    call read_xtal_structure(filenam,cell,spg,atm,mgp=mgp,matm=matm)
+                end if
             end if
         end if
 
@@ -157,11 +222,96 @@ module py_cfml_ioform
         end if
 
         ! Return
+        if (ierror /= 0) call err_clear
         ierror = tuple_create(ret,2)
         ierror = ret%setitem(0,err_cfml%ierr)
         ierror = ret%setitem(1,trim(err_cfml%msg))
         resul = ret%get_c_ptr()
 
     end function py_read_xtal_structure
+
+    function py_set_spacegroup(self_ptr,args_ptr) result(resul) bind(c)
+
+        ! Arguments
+        type(c_ptr), value :: self_ptr
+        type(c_ptr), value :: args_ptr
+        type(c_ptr)        :: resul
+
+        ! Variables in args_ptr
+        character(len=:), allocatable :: key  !
+        character(len=:), allocatable :: mode !
+        type(dict)                    :: di_spg    !! Space group
+
+        ! Local variables
+        integer :: ierror,narg
+        logical :: is_kwargs,dbase
+        type(spg_type) :: spg
+        type(object) :: item
+        type(tuple) :: args,ret
+
+        ierror = 0
+        dbase = .true.
+        is_kwargs = .false.
+        call clear_error()
+
+        ! Use unsafe_cast_from_c_ptr to cast from c_ptr to tuple/dict
+        call unsafe_cast_from_c_ptr(args,args_ptr)
+
+        ! Check the number of items
+        ierror = args%len(narg)
+        if (narg < 2) then
+            ierror = -1
+            err_cfml%ierr = ierror
+            err_cfml%msg = 'py_read_setspacegroup: insufficient number of arguments'
+        end if
+
+        if (ierror == 0) ierror = args%getitem(item,0)
+        if (ierror == 0) ierror = cast(key,item)
+
+        ! Use the type of the second argument to decide if the call to the subroutine
+        ! set_spacegroup corresponds to set_spacegroup_dbase or set_spacegroup_gen
+        if (ierror == 0) ierror = args%getitem(item,1)
+        if (ierror == 0) then
+            if (is_dict(item)) dbase = .false.
+        end if
+        if (ierror == 0) then
+            if (dbase) then
+                ierror = cast(mode,item)
+                if (ierror == 0) ierror = args%getitem(item,2)
+                if (ierror == 0) ierror = cast(di_spg,item)
+                if (ierror == 0) call di_spg%clear()
+                ! Get optional arguments, if any
+            else
+                ierror = cast(di_spg,item)
+                if (ierror == 0) call di_spg%clear()
+                ! Get optional arguments, if any
+            end if
+        end if
+
+        if (ierror == 0) then
+            ! Call Fortran procedure
+            if (dbase) then
+                if (narg == 3) then
+                    call set_spacegroup(key,mode,spg)
+                end if
+            else
+                if (narg == 2) then
+                    call set_spacegroup(key,spg)
+                end if
+            end if
+        end if
+
+        if (ierror == 0) then
+            ! Wrapping
+            call wrap_group_type(spg,di_spg)
+        end if
+
+        ! Return
+        ierror = tuple_create(ret,2)
+        ierror = ret%setitem(0,err_cfml%ierr)
+        ierror = ret%setitem(1,trim(err_cfml%msg))
+        resul = ret%get_c_ptr()
+
+    end function py_set_spacegroup
 
 end module py_cfml_ioform
