@@ -35,11 +35,12 @@ module py_cfml_ioform
 
     use cfml_atoms, only: atlist_type,matom_list_type
     use cfml_globaldeps, only: err_cfml,clear_error
-    use cfml_gSpaceGroups, only: spg_type,set_spacegroup
+    use cfml_gSpaceGroups, only: spg_type,superspacegroup_type,set_spacegroup
     use cfml_ioform, only: read_xtal_structure
     use cfml_kvec_Symmetry, only: magsymm_k_type,magnetic_domain_type
     use cfml_metrics, only: cell_g_type
     use cfml_python, only: wrap_atlist_type,wrap_cell_type,wrap_group_type
+    use cfml_strings, only: u_case
 
     implicit none
 
@@ -238,20 +239,23 @@ module py_cfml_ioform
         type(c_ptr)        :: resul
 
         ! Variables in args_ptr
-        character(len=:), allocatable :: key  !
-        character(len=:), allocatable :: mode !
+        character(len=:), allocatable :: generator !
         type(dict)                    :: di_spg    !! Space group
 
         ! Local variables
-        integer :: ierror,narg
-        logical :: is_kwargs,dbase
-        type(spg_type) :: spg
+        integer, parameter :: NMANDATORY = 2
+        integer :: ierror,ierr,narg,spg_num,i,j
+        logical :: is_setting
+        character(len=5) :: mode
+        character(len=180) :: setting
+        character(len=:), allocatable :: key
+        class(spg_type), allocatable :: spg
         type(object) :: item
         type(tuple) :: args,ret
 
         ierror = 0
-        dbase = .true.
-        is_kwargs = .false.
+        mode = ''
+        is_setting = .false.
         call clear_error()
 
         ! Use unsafe_cast_from_c_ptr to cast from c_ptr to tuple/dict
@@ -259,54 +263,91 @@ module py_cfml_ioform
 
         ! Check the number of items
         ierror = args%len(narg)
-        if (narg < 2) then
+        if (narg < NMANDATORY) then
             ierror = -1
             err_cfml%ierr = ierror
             err_cfml%msg = 'py_read_setspacegroup: insufficient number of arguments'
         end if
 
+        ! Check types
         if (ierror == 0) ierror = args%getitem(item,0)
-        if (ierror == 0) ierror = cast(key,item)
-
-        ! Use the type of the second argument to decide if the call to the subroutine
-        ! set_spacegroup corresponds to set_spacegroup_dbase or set_spacegroup_gen
+        if (ierror == 0) then
+            if (.not. is_str(item)) then
+                ierror = -1
+                err_cfml%ierr = ierror
+                err_cfml%msg = 'py_read_setspacegroup: first argument must be a string'
+            else
+                ierror = cast(generator,item)
+            end if
+        end if
         if (ierror == 0) ierror = args%getitem(item,1)
         if (ierror == 0) then
-            if (is_dict(item)) dbase = .false.
-        end if
-        if (ierror == 0) then
-            if (dbase) then
-                ierror = cast(mode,item)
-                if (ierror == 0) ierror = args%getitem(item,2)
-                if (ierror == 0) ierror = cast(di_spg,item)
-                if (ierror == 0) call di_spg%clear()
-                ! Get optional arguments, if any
+            if (.not. is_dict(item)) then
+                ierror = -1
+                err_cfml%ierr = ierror
+                err_cfml%msg = 'py_read_setspacegroup: second argument must be a dictionary'
             else
                 ierror = cast(di_spg,item)
                 if (ierror == 0) call di_spg%clear()
-                ! Get optional arguments, if any
+            end if
+        end if
+        if (ierror /= 0 .and. err_cfml%ierr == 0) then
+            err_cfml%ierr = ierror
+            err_cfml%msg = 'py_read_setspacegroup: error parsing arguments'
+        end if
+
+        ! Syntax analysis of generator and call to set_spacegroup
+        if (ierr == 0) then
+            generator = trim(generator)
+            i = index(generator,' ')
+            if (i > 0) then
+                key = u_case(generator(1:i-1))
+                generator = adjustl(generator(i:))
+                select case (key)
+                case ('HALL','MHALL','SPGR','SPACEG')
+                    allocate(spg_type :: spg)
+                    mode = 'symb'
+                case ('SHUB')
+                    allocate(spg_type :: spg)
+                    mode = 'shubn'
+                case ("SSG","SUPER","SSPG")
+                    allocate(superspacegroup_type :: spg)
+                    mode = 'super'
+                !case ('GENERATORS')
+                case default
+                    ierror = -1
+                    err_cfml%ierr = ierror
+                    err_cfml%msg = 'py_read_setspacegroup: error parsing generator. Keyword '//key//' unknown'
+                end select
+            end if
+        end if
+        if (ierr == 0) then
+            i = index(generator,'::')
+            if (i /= 0) then
+                setting = adjustl(trim(generator(i+2:)))
+                if (len(setting) > 0) is_setting = .true.
+                generator = generator(:i-1)
             end if
         end if
 
-        if (ierror == 0) then
-            ! Call Fortran procedure
-            if (dbase) then
-                if (narg == 3) then
-                    call set_spacegroup(key,mode,spg)
-                end if
+        ! Call Fortran procedure
+        select case (trim(mode))
+        case ('shubn','super')
+            if (is_setting) then
+                call set_spacegroup(generator,mode,spg,setting=setting)
             else
-                if (narg == 2) then
-                    call set_spacegroup(key,spg)
-                end if
+                call set_spacegroup(generator,mode,spg)
             end if
-        end if
+        case default
+            call set_spacegroup(generator,spg)
+        end select
+        ierror = err_cfml%ierr
 
-        if (ierror == 0) then
-            ! Wrapping
-            call wrap_group_type(spg,di_spg)
-        end if
+        ! Wrapping
+        if (ierror == 0) call wrap_group_type(spg,di_spg)
 
         ! Return
+        if (ierror /= 0) call err_clear
         ierror = tuple_create(ret,2)
         ierror = ret%setitem(0,err_cfml%ierr)
         ierror = ret%setitem(1,trim(err_cfml%msg))
