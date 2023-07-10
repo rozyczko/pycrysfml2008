@@ -35,12 +35,11 @@ module py_cfml_ioform
 
     use cfml_atoms, only: atlist_type,matom_list_type
     use cfml_globaldeps, only: err_cfml,clear_error
-    use cfml_gSpaceGroups, only: spg_type,superspacegroup_type,set_spacegroup
+    use cfml_gSpaceGroups, only: spg_type
     use cfml_ioform, only: read_xtal_structure
     use cfml_kvec_Symmetry, only: magsymm_k_type,magnetic_domain_type
     use cfml_metrics, only: cell_g_type
     use cfml_python, only: wrap_atlist_type,wrap_cell_type,wrap_group_type
-    use cfml_strings, only: u_case
 
     implicit none
 
@@ -73,9 +72,8 @@ module py_cfml_ioform
         ierror = Forpy_Initialize()
 
         ! Build method table
-        call table_ioform%init(2)
+        call table_ioform%init(1)
         call table_ioform%add_method("read_xtal_structure","py_read_xtal_structure",METH_VARARGS,c_funloc(py_read_xtal_structure))
-        call table_ioform%add_method("set_spacegroup","py_set_spacegroup",METH_VARARGS,c_funloc(py_set_spacegroup))
 
         ! Build mod_ioform
         m = mod_ioform%init("py_cfml_ioform","A Python API for CrysFML08",table_ioform)
@@ -230,129 +228,5 @@ module py_cfml_ioform
         resul = ret%get_c_ptr()
 
     end function py_read_xtal_structure
-
-    function py_set_spacegroup(self_ptr,args_ptr) result(resul) bind(c)
-
-        ! Arguments
-        type(c_ptr), value :: self_ptr
-        type(c_ptr), value :: args_ptr
-        type(c_ptr)        :: resul
-
-        ! Variables in args_ptr
-        character(len=:), allocatable :: generator !
-        type(dict)                    :: di_spg    !! Space group
-
-        ! Local variables
-        integer, parameter :: NMANDATORY = 2
-        integer :: ierror,ierr,narg,spg_num,i,j
-        logical :: is_setting
-        character(len=5) :: mode
-        character(len=180) :: setting
-        character(len=:), allocatable :: key
-        class(spg_type), allocatable :: spg
-        type(object) :: item
-        type(tuple) :: args,ret
-
-        ierror = 0
-        mode = ''
-        is_setting = .false.
-        call clear_error()
-
-        ! Use unsafe_cast_from_c_ptr to cast from c_ptr to tuple/dict
-        call unsafe_cast_from_c_ptr(args,args_ptr)
-
-        ! Check the number of items
-        ierror = args%len(narg)
-        if (narg < NMANDATORY) then
-            ierror = -1
-            err_cfml%ierr = ierror
-            err_cfml%msg = 'py_read_setspacegroup: insufficient number of arguments'
-        end if
-
-        ! Check types
-        if (ierror == 0) ierror = args%getitem(item,0)
-        if (ierror == 0) then
-            if (.not. is_str(item)) then
-                ierror = -1
-                err_cfml%ierr = ierror
-                err_cfml%msg = 'py_read_setspacegroup: first argument must be a string'
-            else
-                ierror = cast(generator,item)
-            end if
-        end if
-        if (ierror == 0) ierror = args%getitem(item,1)
-        if (ierror == 0) then
-            if (.not. is_dict(item)) then
-                ierror = -1
-                err_cfml%ierr = ierror
-                err_cfml%msg = 'py_read_setspacegroup: second argument must be a dictionary'
-            else
-                ierror = cast(di_spg,item)
-                if (ierror == 0) call di_spg%clear()
-            end if
-        end if
-        if (ierror /= 0 .and. err_cfml%ierr == 0) then
-            err_cfml%ierr = ierror
-            err_cfml%msg = 'py_read_setspacegroup: error parsing arguments'
-        end if
-
-        ! Syntax analysis of generator and call to set_spacegroup
-        if (ierr == 0) then
-            generator = trim(generator)
-            i = index(generator,' ')
-            if (i > 0) then
-                key = u_case(generator(1:i-1))
-                generator = adjustl(generator(i:))
-                select case (key)
-                case ('HALL','MHALL','SPGR','SPACEG')
-                    allocate(spg_type :: spg)
-                    mode = 'symb'
-                case ('SHUB')
-                    allocate(spg_type :: spg)
-                    mode = 'shubn'
-                case ("SSG","SUPER","SSPG")
-                    allocate(superspacegroup_type :: spg)
-                    mode = 'super'
-                !case ('GENERATORS')
-                case default
-                    ierror = -1
-                    err_cfml%ierr = ierror
-                    err_cfml%msg = 'py_read_setspacegroup: error parsing generator. Keyword '//key//' unknown'
-                end select
-            end if
-        end if
-        if (ierr == 0) then
-            i = index(generator,'::')
-            if (i /= 0) then
-                setting = adjustl(trim(generator(i+2:)))
-                if (len(setting) > 0) is_setting = .true.
-                generator = generator(:i-1)
-            end if
-        end if
-
-        ! Call Fortran procedure
-        select case (trim(mode))
-        case ('shubn','super')
-            if (is_setting) then
-                call set_spacegroup(generator,mode,spg,setting=setting)
-            else
-                call set_spacegroup(generator,mode,spg)
-            end if
-        case default
-            call set_spacegroup(generator,spg)
-        end select
-        ierror = err_cfml%ierr
-
-        ! Wrapping
-        if (ierror == 0) call wrap_group_type(spg,di_spg)
-
-        ! Return
-        if (ierror /= 0) call err_clear
-        ierror = tuple_create(ret,2)
-        ierror = ret%setitem(0,err_cfml%ierr)
-        ierror = ret%setitem(1,trim(err_cfml%msg))
-        resul = ret%get_c_ptr()
-
-    end function py_set_spacegroup
 
 end module py_cfml_ioform
