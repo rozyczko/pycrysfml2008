@@ -91,7 +91,7 @@ module py_cfml_gspacegroups
 
         ! Local variables
         integer, parameter :: NMANDATORY = 2
-        integer :: ierror,narg,i
+        integer :: ierror,narg,i,j,k
         logical :: is_setting
         character(len=5) :: mode
         character(len=180) :: setting
@@ -146,6 +146,7 @@ module py_cfml_gspacegroups
         ! Syntax analysis of generator and call to set_spacegroup
         if (ierror == 0) then
             generator = trim(generator)
+            generator = adjustl(generator)
             i = index(generator,' ')
             if (i > 0) then
                 key = u_case(generator(1:i-1))
@@ -160,7 +161,16 @@ module py_cfml_gspacegroups
                 case ('SSG','SUPER','SSPG')
                     allocate(superspacegroup_type :: spg)
                     mode = 'super'
-                !case ('GENERATORS')
+                case ('GEN')
+                    ! Get first generator
+                    j = index(generator,'t')
+                    k = index(generator,'x4')
+                    if (j > 0 .or. k > 0) then
+                        allocate(superspacegroup_type :: spg)
+                    else
+                        allocate(spg_type :: spg)
+                    end if
+                    mode = 'gen'
                 case default
                     ierror = -1
                     err_cfml%ierr = ierror
