@@ -152,14 +152,14 @@ module py_cfml_ioform
             if (ierror == 0) then
                 ierror = di_kwargs%getitem(atm_typ,"atm_typ")
                 if (ierror /= 0) then
-                    call err_clear
+                    call err_clear()
                 else
                     is_atm_typ = .true.
                 end if
                 ierror = di_kwargs%getitem(item,"mgp")
                 if (ierror == 0) ierror = cast(di_mgp,item)
                 if (ierror /= 0) then
-                    call err_clear
+                    call err_clear()
                 else
                     is_mgp = .true.
                     call di_mgp%clear()
@@ -167,7 +167,7 @@ module py_cfml_ioform
                 ierror = di_kwargs%getitem(item,"matm")
                 if (ierror == 0) ierror = cast(di_matm,item)
                 if (ierror /= 0) then
-                    call err_clear
+                    call err_clear()
                 else
                     is_matm = .true.
                     call di_matm%clear()
@@ -175,14 +175,14 @@ module py_cfml_ioform
                 ierror = di_kwargs%getitem(item,"mag_dom")
                 if (ierror == 0) ierror = cast(di_mag_dom,item)
                 if (ierror /= 0) then
-                    call err_clear
+                    call err_clear()
                 else
                     is_mag_dom = .true.
                     call di_mag_dom%clear()
                 end if
                 ierror = di_kwargs%getitem(iphase,"iphase")
                 if (ierror /= 0) then
-                    call err_clear
+                    call err_clear()
                 else
                     is_iphase = .true.
                 end if
@@ -221,7 +221,7 @@ module py_cfml_ioform
         end if
 
         ! Return
-        if (ierror /= 0) call err_clear
+        if (ierror /= 0) call err_clear()
         ierror = tuple_create(ret,2)
         ierror = ret%setitem(0,err_cfml%ierr)
         ierror = ret%setitem(1,trim(err_cfml%msg))
