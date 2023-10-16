@@ -35,11 +35,11 @@ module py_cfml_ioform
 
     use cfml_atoms, only: atlist_type,matom_list_type
     use cfml_globaldeps, only: err_cfml,clear_error
-    use cfml_gSpaceGroups, only: spg_type
+    use cfml_gSpaceGroups, only: get_orbit,point_orbit,spg_type
     use cfml_ioform, only: read_xtal_structure
     use cfml_kvec_Symmetry, only: magsymm_k_type,magnetic_domain_type
     use cfml_metrics, only: cell_g_type
-    use cfml_python, only: wrap_atlist_type,wrap_cell_type,wrap_group_type
+    use cfml_python, only: check_number_of_arguments,get_var_from_item,unwrap_dict_item,wrap_atlist_type,wrap_cell_type,wrap_group_type
 
     implicit none
 
@@ -88,27 +88,28 @@ module py_cfml_ioform
         type(c_ptr)        :: resul
 
         ! Variables in args_ptr
-        character(len=:), allocatable :: filenam    !! Name of the file
-        type(dict)                    :: di_cell    !! Unit cell
-        type(dict)                    :: di_spg     !! Space group
-        type(dict)                    :: di_atm     !! Atoms
+        character(len=:), allocatable :: filename   !! Name of the file
         type(dict)                    :: di_kwargs  !! Optional arguments
         character(len=:), allocatable :: atm_typ    !! Atom type (optional)
-        type(dict)                    :: di_mgp     !!
-        type(dict)                    :: di_matm    !!
-        type(dict)                    :: di_mag_dom !!
         integer                       :: iphase     !! Number of the phase
 
         ! Local variables
-        integer, parameter :: NMANDATORY = 4
+        integer, parameter :: NMANDATORY = 1
         integer :: ierror,narg
-        logical :: is_kwargs,is_atm_typ,is_mgp,is_matm,is_mag_dom,is_iphase
+        logical :: is_kwargs,is_atm_typ,is_mgp,is_matm,is_mag_dom,is_iphase,is_orbits
+        type(dict) :: di_cell
+        type(dict) :: di_spg
+        type(dict) :: di_atm
+        type(dict) :: di_mgp
+        type(dict) :: di_matm
+        type(dict) :: di_mag_dom
+        type(list) :: li_orb
         type(magsymm_k_type) :: mgp
         type(matom_list_type) :: matm
         type(magnetic_domain_type) :: mag_dom
         type(object) :: item
         type(tuple) :: args,ret
-        type(cell_g_type):: cell
+        class(cell_g_type), allocatable :: cell
         class(spg_type), allocatable :: spg
         type(atlist_type) :: atm
 
@@ -119,114 +120,196 @@ module py_cfml_ioform
         is_matm = .false.
         is_mag_dom = .false.
         is_iphase = .false.
+        is_orbits = .false.
+        ierror = dict_create(di_cell)
+        ierror = dict_create(di_spg)
+        ierror = dict_create(di_atm)
+        ierror = dict_create(di_mgp)
+        ierror = dict_create(di_matm)
+        ierror = dict_create(di_mag_dom)
+        ierror = list_create(li_orb)
         call clear_error()
 
         ! Use unsafe_cast_from_c_ptr to cast from c_ptr to tuple/dict
         call unsafe_cast_from_c_ptr(args,args_ptr)
 
         ! Check the number of items
-        ierror = args%len(narg)
-        if (narg < NMANDATORY) then
-            ierror = -1
-            err_cfml%ierr = ierror
-            err_cfml%msg = 'py_read_xtal_structure: insufficient number of arguments'
-        end if
-
-        ! Get mandatory arguments
+        call check_number_of_arguments('py_read_xtal_structure',args,NMANDATORY,narg,ierror)
         if (ierror == 0) ierror = args%getitem(item,0)
-        if (ierror == 0) ierror = cast(filenam,item)
-        if (ierror == 0) ierror = args%getitem(item,1)
-        if (ierror == 0) ierror = cast(di_cell,item)
-        if (ierror == 0) call di_cell%clear()
-        if (ierror == 0) ierror = args%getitem(item,2)
-        if (ierror == 0) ierror = cast(di_spg,item)
-        if (ierror == 0) call di_spg%clear()
-        if (ierror == 0) ierror = args%getitem(item,3)
-        if (ierror == 0) ierror = cast(di_atm,item)
-        if (ierror == 0) call di_atm%clear()
 
-        ! Get optional arguments, if any
+        ! Get arguments
+        if (ierror == 0) call get_var_from_item('py_read_xtal_structure','filename',item,filename,ierror)
         if (ierror == 0 .and. narg > NMANDATORY) then
-            ierror = args%getitem(item,4)
-            if (ierror == 0) ierror = cast(di_kwargs,item)
+            ierror = args%getitem(item,1)
+            if (ierror == 0) call get_var_from_item('py_read_xtal_structure','kwargs',item,di_kwargs,ierror)
             if (ierror == 0) then
-                ierror = di_kwargs%getitem(atm_typ,"atm_typ")
+                call unwrap_dict_item('py_read_xtal_structure','atm_typ',di_kwargs,atm_typ,ierror)
                 if (ierror /= 0) then
                     call err_clear()
+                    call clear_error()
+                    ierror = 0
                 else
                     is_atm_typ = .true.
                 end if
-                ierror = di_kwargs%getitem(item,"mgp")
-                if (ierror == 0) ierror = cast(di_mgp,item)
+                ierror = di_kwargs%getitem(item,'mgp')
                 if (ierror /= 0) then
                     call err_clear()
+                    call clear_error()
+                    ierror = 0
                 else
                     is_mgp = .true.
-                    call di_mgp%clear()
                 end if
-                ierror = di_kwargs%getitem(item,"matm")
-                if (ierror == 0) ierror = cast(di_matm,item)
+                ierror = di_kwargs%getitem(item,'matm')
                 if (ierror /= 0) then
                     call err_clear()
+                    call clear_error()
+                    ierror = 0
                 else
                     is_matm = .true.
-                    call di_matm%clear()
                 end if
-                ierror = di_kwargs%getitem(item,"mag_dom")
-                if (ierror == 0) ierror = cast(di_mag_dom,item)
+                ierror = di_kwargs%getitem(item,'mag_dom')
                 if (ierror /= 0) then
                     call err_clear()
+                    call clear_error()
+                    ierror = 0
                 else
                     is_mag_dom = .true.
-                    call di_mag_dom%clear()
                 end if
-                ierror = di_kwargs%getitem(iphase,"iphase")
+                ierror = di_kwargs%getitem(item,'orbits')
                 if (ierror /= 0) then
                     call err_clear()
+                    call clear_error()
+                    ierror = 0
+                else
+                    is_orbits = .true.
+                end if
+                call unwrap_dict_item('py_read_xtal_structure','iphase',di_kwargs,iphase,ierror)
+                if (ierror /= 0) then
+                    call err_clear()
+                    call clear_error()
+                    ierror = 0
                 else
                     is_iphase = .true.
                 end if
             end if
         end if
-
-        if (ierror /= 0 .and. narg >= NMANDATORY) then
+        if (ierror /= 0 .and. err_cfml%ierr == 0) then
             err_cfml%ierr = ierror
-            err_cfml%msg = 'py_read_xtal_structure: error while casting arguments'
+            err_cfml%msg = 'py_read_xtal_structure: error parsing arguments'
         end if
 
+        ! Call Fortran procedure
         if (ierror == 0) then
-            ! Call Fortran procedure
             if (narg == NMANDATORY) then
-                call read_xtal_structure(filenam,cell,spg,atm)
+                call read_xtal_structure(filename,cell,spg,atm)
             else if (is_iphase) then
                 if (is_atm_typ) then
-                    call read_xtal_structure(filenam,cell,spg,atm,atm_typ,iphase=iphase)
+                    call read_xtal_structure(filename,cell,spg,atm,atm_typ,iphase=iphase)
                 else
-                    call read_xtal_structure(filenam,cell,spg,atm,iphase=iphase)
+                    call read_xtal_structure(filename,cell,spg,atm,iphase=iphase)
                 end if
             else if (is_mgp .and. is_matm) then
                 if (is_mag_dom) then
-                    call read_xtal_structure(filenam,cell,spg,atm,mgp=mgp,matm=matm,mag_dom=mag_dom)
+                    call read_xtal_structure(filename,cell,spg,atm,mgp=mgp,matm=matm,mag_dom=mag_dom)
                 else
-                    call read_xtal_structure(filenam,cell,spg,atm,mgp=mgp,matm=matm)
+                    call read_xtal_structure(filename,cell,spg,atm,mgp=mgp,matm=matm)
                 end if
+            else if (is_orbits) then
+                call read_xtal_structure(filename,cell,spg,atm)
             end if
         end if
 
-        if (ierror == 0) then
-            ! Wrapping
-            call wrap_cell_type(cell,di_cell)
-            call wrap_atlist_type(atm,di_atm)
-            call wrap_group_type(spg,di_spg)
+        ! Orbits
+        if (is_orbits .and. ierror == 0) then
+                call get_orbits_cartesian(cell,atm,spg,li_orb,ierror)
+                if (ierror /= 0) then
+                    err_cfml%ierr = ierror
+                    err_cfml%msg = 'py_read_xtal_structure: error getting orbits'
+                end if
         end if
+
+        ! Wrapping
+        if (ierror == 0) call wrap_cell_type(cell,di_cell,ierror)
+        if (ierror == 0) call wrap_atlist_type(atm,di_atm,ierror)
+        if (ierror == 0) call wrap_group_type(spg,di_spg,ierror)
 
         ! Return
         if (ierror /= 0) call err_clear()
-        ierror = tuple_create(ret,2)
+        if (is_orbits) then
+            ierror = tuple_create(ret,9)
+        else
+            ierror = tuple_create(ret,8)
+        end if
         ierror = ret%setitem(0,err_cfml%ierr)
         ierror = ret%setitem(1,trim(err_cfml%msg))
+        ierror = ret%setitem(2,di_cell)
+        ierror = ret%setitem(3,di_spg)
+        ierror = ret%setitem(4,di_atm)
+        ierror = ret%setitem(5,di_mgp)
+        ierror = ret%setitem(6,di_matm)
+        ierror = ret%setitem(7,di_mag_dom)
+        if (is_orbits) ierror = ret%setitem(8,li_orb)
         resul = ret%get_c_ptr()
 
     end function py_read_xtal_structure
+
+    subroutine get_orbits_cartesian(cell,asu,spg,li_orb,ierror)
+
+        ! Arguments
+        type(Cell_G_Type),            intent(in)    :: cell
+        type(AtList_Type),            intent(in)    :: asu
+        class(Spg_Type),              intent(in)    :: spg
+        type(list),                   intent(inout) :: li_orb
+        integer,                      intent(inout) :: ierror
+
+        ! Local variables
+        integer :: i,j
+        real :: a
+        real, dimension(3,3) :: U ! Matrix used for computing magnetic moment in cartesian coordinates
+        type(Point_Orbit) :: orbit
+        type(dict), dimension(:), allocatable :: di_orb
+
+        ierror = 0
+        allocate(di_orb(asu%natoms))
+        do i = 1 , 3
+            a = 0.0
+            do j = 1 , 3
+                a = a + cell%cr_orth_cel(j,i)**2
+            end do
+            U(:,i) = cell%cr_orth_cel(:,i) / sqrt(a)
+        end do
+        do i = 1 , asu%natoms
+            if (ierror == 0) call Get_Orbit(asu%atom(i)%x,spg,orbit,asu%atom(i)%moment)
+            if (ierror == 0) ierror = err_cfml%ierr
+            if (ierror == 0) ierror = dict_create(di_orb(i))
+            if (ierror == 0) call wrap_orbit_cartesian(U,cell,orbit,di_orb(i),ierror)
+            if (ierror == 0) ierror = li_orb%append(di_orb(i))
+        end do
+
+    end subroutine get_orbits_cartesian
+
+    subroutine wrap_orbit_cartesian(U,cell,orbit,di_orb,ierror)
+
+        ! Arguments
+        real, dimension(3,3), intent(in)    :: U
+        type(Cell_G_Type),    intent(in)    :: cell
+        type(Point_Orbit),    intent(in)    :: orbit
+        type(dict),           intent(inout) :: di_orb
+        integer,              intent(inout) :: ierror
+
+        ! Local variables
+        type(ndarray) :: pos,pos_c,mom,mom_c
+
+        ierror = di_orb%setitem('mult',orbit%mult)
+        if (ierror == 0) ierror = ndarray_create(pos,orbit%pos)
+        if (ierror == 0) ierror = di_orb%setitem('pos',pos)
+        if (ierror == 0) ierror = ndarray_create(pos_c,matmul(cell%cr_orth_cel,orbit%pos))
+        if (ierror == 0) ierror = di_orb%setitem('pos_c',pos_c)
+        if (ierror == 0) ierror = ndarray_create(mom,orbit%mom)
+        if (ierror == 0) ierror = di_orb%setitem('mom',mom)
+        if (ierror == 0) ierror = ndarray_create(mom_c,matmul(U,orbit%mom))
+        if (ierror == 0) ierror = di_orb%setitem('mom_c',mom_c)
+
+    end subroutine wrap_orbit_cartesian
 
 end module py_cfml_ioform
