@@ -1,0 +1,59 @@
+@echo off
+
+rem -------------------------------------------------------------
+rem Int3D08
+rem -------------------------------------------------------------
+rem This file is part of Int3d08
+rem
+rem The Int3D project is distributed under LGPL. In agreement with the
+rem Intergovernmental Convention of the ILL, this software cannot be used
+rem in military applications.
+rem
+rem Copyright (C) 2020-2022  Institut Laue-Langevin (ILL), Grenoble, FRANCE
+rem
+rem Authors: Nebil A. Katcho (ILL)
+rem          Juan Rodriguez-Carvajal (ILL)
+rem
+rem
+rem
+rem This library is free software; you can redistribute it and/or
+rem modify it under the terms of the GNU Lesser General Public
+rem License as published by the Free Software Foundation; either
+rem version 3.0 of the License, or (at your option) any later version.
+rem
+rem This library is distributed in the hope that it will be useful,
+rem but WITHOUT ANY WARRANTY; without even the implied warranty of
+rem MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+rem Lesser General Public License for more details.
+rem
+rem You should have received a copy of the GNU Lesser General Public
+rem License along with this library; if not, see <http://www.gnu.org/licenses/>.
+rem
+rem -------------------------------------------------------------
+
+set SRC=..\..\src
+set SRC_NEXUS="%CRYSFML08%\HDF5"
+set INCLUDE=/I"%CRYSFML08_INSTALL%\include" /I"%HDF5_INSTALL%\include\static"
+set OPT=/c /O3 /Warn /nologo
+
+echo Compiling Nexus_Mod.F90
+ifort %SRC_NEXUS%\Nexus_Mod.F90       %OPT% %INCLUDE%
+echo Compiling units_mod.f90
+ifort %SRC%\units_mod.f90             %OPT%
+echo Compiling types_mod.f90
+ifort %SRC%\types_mod.f90             %OPT% %INCLUDE%
+echo Compiling global_mod.f90
+13/07/2023
+	Atlist_type:
+		Documentar componentes mcomp y symm_checked
+20/07/2023
+	Imposible de entender la explicación de cartype en línea 241 de CFML_Metrics.f90
+27/07/2023
+	Por ahora retiro h_latt_absent de la interfaz porque no entiendo lo que hace
+01/08/2023
+	No entiendo el atributo cross de twofold_axes_type
+08/08/2023
+	Tengo la impresion de que String_from_MAT_TR_R no funciona bien.
+	Elimino por ahora get_transfm_matrix de la lista de funciones accesibles hasta que no comprenda el atributo cartype.
+09/08/2023
+	La documentación de atm_cell_type no se entiende bien.

@@ -29,9 +29,10 @@ rem License along with this library; if not, see <http://www.gnu.org/licenses/>.
 rem
 rem -------------------------------------------------------------
 
-set INSTALLATION_DIR=""
-set CRYSFML08_INCLUDE_DIR= ""
-set CRYSFML08_LIB_DIR= ""
+set INSTALLATION_DIR=C:\Users\oarce\pycrysfml08\.venv\Lib\site-packages
+set CRYSFML08_INCLUDE_DIR=C:\Users\oarce\CrysFML\ifort_release\include
+set CRYSFML08_LIB_DIR=C:\Users\oarce\CrysFML\ifort_release\lib
+set LIBPYTHON=C:\Users\oarce\AppData\Local\Programs\Python\Python311\libs\python311.lib
 if %INSTALLATION_DIR% == "" (
     echo Please set INSTALLATION_DIR by editing the script
     goto exit

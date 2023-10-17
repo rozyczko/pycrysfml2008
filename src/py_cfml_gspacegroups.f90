@@ -35,8 +35,8 @@ module py_cfml_gspacegroups
 
     use cfml_globaldeps, only: err_cfml,clear_error
     use cfml_gSpaceGroups
-    use cfml_python, only: check_number_of_arguments,get_var_from_item,ndarray_to_pointer,pointer_to_array,pointer_to_array_alloc,&
-                           unwrap_spg_type,wrap_group_type,wrap_symm_oper_type
+    use cfml_python, only: check_number_of_arguments,get_var_from_item,ndarray_to_pointer,pointer_to_array,pointer_to_array_alloc,unwrap_spg_type,wrap_group_type,wrap_symm_oper_type,&
+                           wrap_kvect_info_type
     use cfml_rational, only: real
     use cfml_strings, only: u_case
 
@@ -71,7 +71,8 @@ module py_cfml_gspacegroups
         ierror = Forpy_Initialize()
 
         ! Build method table
-        call table_gspacegroups%init(5)
+        call table_gspacegroups%init(6)
+        call table_gspacegroups%add_method("allocate_kvector","py_allocate_kvector",METH_VARARGS,c_funloc(py_allocate_kvector))
         call table_gspacegroups%add_method("equal_group","py_equal_group",METH_VARARGS,c_funloc(py_equal_group))
         call table_gspacegroups%add_method("get_multip_pos","py_get_multip_pos",METH_VARARGS,c_funloc(py_get_multip_pos))
         call table_gspacegroups%add_method("get_op_from_symb","py_get_op_from_symb",METH_VARARGS,c_funloc(py_get_op_from_symb))
@@ -82,6 +83,59 @@ module py_cfml_gspacegroups
         m = mod_gspacegroups%init("py_cfml_gspacegroups","A Python API for CrysFML08",table_gspacegroups)
 
     end function Init
+
+    function py_allocate_kvector(self_ptr,args_ptr) result(resul) bind(c)
+
+        ! Arguments
+        type(c_ptr), value :: self_ptr
+        type(c_ptr), value :: args_ptr
+        type(c_ptr)        :: resul
+
+        ! Variables in args_ptr
+        integer    :: nk
+        integer    :: nq
+    
+        ! Local variables
+        integer, parameter :: NMANDATORY = 2
+        integer :: ierror,narg
+        type(object) :: item
+        type(tuple) :: args,ret
+        type(kvect_info_type) :: kvec
+        type(dict) :: di_kvec
+
+        ierror = 0
+        ierror = dict_create(di_kvec)
+        call clear_error()
+
+        ! Use unsafe_cast_from_c_ptr to cast from c_ptr to tuple/dict
+        call unsafe_cast_from_c_ptr(args,args_ptr)
+
+        ! Check the number of items
+        call check_number_of_arguments('py_allocate_kvector',args,NMANDATORY,narg,ierror)
+
+        ! Get arguments
+        if (ierror == 0) ierror = args%getitem(item,0)
+        if (ierror == 0) call get_var_from_item('py_allocate_kvector','nk',item,nk,ierror)
+        if (ierror == 0) ierror = args%getitem(item,1)
+        if (ierror == 0) call get_var_from_item('py_allocate_kvector','nq',item,nq,ierror)
+        if (ierror /= 0 .and. err_cfml%ierr == 0) then
+            err_cfml%ierr = ierror
+            err_cfml%msg = 'py_allocate_kvector: error parsing arguments'
+        end if
+
+        ! Call Fortran procedure
+        if (ierror == 0) call allocate_kvector(nk,nq,kvec)
+        if (ierror == 0) ierror = err_cfml%ierr
+        if (ierror == 0) call wrap_kvect_info_type(kvec,di_kvec,ierror)
+
+        if (ierror /= 0) call err_clear()
+        ierror = tuple_create(ret,3)
+        ierror = ret%setitem(0,err_cfml%ierr)
+        ierror = ret%setitem(1,trim(err_cfml%msg))
+        ierror = ret%setitem(2,di_kvec)
+        resul = ret%get_c_ptr()
+
+    end function py_allocate_kvector
 
     function py_equal_group(self_ptr,args_ptr) result(resul) bind(c)
 
