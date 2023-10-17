@@ -23,15 +23,15 @@ codes = ['spg', 'iphase', 'magext', 'kinfo', 'order', 'unique', 'seqindx', 'hlim
 # Initialize variables
 err,err_mess,spg = py_cfml_gspacegroups.set_spacegroup("SPG Pnma")
 iphase = 1
-magext = [True, False]
+magext = True
 err,err_mess,kinfo = py_cfml_gspacegroups.allocate_kvector(2,3)
-order = [True, False]
-unique = [True, False]
+order = True
+unique = True
 seqindx = np.array([1, 1, 1], dtype=np.int32)
 hlim = np.array([[1, 1],[1, 1],[1, 1]], dtype=np.int32)
-mag_only = [True, False]
-friedel = [True, False]
-ref_typ = ['SRefl','MRefl','Refl']
+mag_only = True
+friedel = True
+ref_typ = 'MRefl'
 
 variables = [spg, iphase, magext, kinfo, order, unique, seqindx, hlim, mag_only, friedel, ref_typ]
 
