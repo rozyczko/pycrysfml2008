@@ -35,7 +35,8 @@ module py_cfml_gspacegroups
 
     use cfml_globaldeps, only: err_cfml,clear_error
     use cfml_gSpaceGroups
-    use cfml_python, only: check_number_of_arguments,get_var_from_item,ndarray_to_pointer,pointer_to_array,pointer_to_array_alloc,unwrap_spg_type,wrap_group_type,wrap_symm_oper_type
+    use cfml_python, only: check_number_of_arguments,get_var_from_item,ndarray_to_pointer,pointer_to_array,pointer_to_array_alloc,&
+                           unwrap_spg_type,wrap_group_type,wrap_symm_oper_type
     use cfml_rational, only: real
     use cfml_strings, only: u_case
 

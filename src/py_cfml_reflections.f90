@@ -39,7 +39,8 @@ module py_cfml_reflections
     use cfml_python, only: check_number_of_arguments,get_var_from_item,ndarray_to_pointer,pointer_to_array,pointer_to_array_alloc,&
                            unwrap_cell_g_type,unwrap_dict_item,unwrap_spg_type,wrap_reflist_type
     use cfml_rational, only: rational
-    use cfml_reflections, only: get_h_info,get_maxnumref,hkl_gen_sxtal,h_absent,h_equiv,h_latt_absent,h_mult,h_s,h_uni,reflist_type
+    use cfml_reflections, only: gener_reflections_shub,get_h_info,get_maxnumref,hkl_gen_sxtal,h_absent,h_equiv,&
+                                h_latt_absent,h_mult,h_s,h_uni,reflist_type
 
     implicit none
 
@@ -72,7 +73,8 @@ module py_cfml_reflections
         ierror = Forpy_Initialize()
 
         ! Build method table
-        call table_reflections%init(9)
+        call table_reflections%init(10)
+        call table_reflections%add_method("gener_reflections_shub","py_gener_reflections_shub",METH_VARARGS,c_funloc(py_gener_reflections_shub))
         call table_reflections%add_method("get_h_info","py_get_h_info",METH_VARARGS,c_funloc(py_get_h_info))
         call table_reflections%add_method("get_maxnumref","py_get_maxnumref",METH_VARARGS,c_funloc(py_get_maxnumref))
         call table_reflections%add_method("hkl_gen_sxtal","py_hkl_gen_sxtal",METH_VARARGS,c_funloc(py_hkl_gen_sxtal))
@@ -87,6 +89,107 @@ module py_cfml_reflections
         m = mod_reflections%init("py_cfml_reflections","A Python API for CrysFML08",table_reflections)
 
     end function Init
+
+    function py_gener_reflections_shub(self_ptr,args_ptr) result(resul) bind(c)
+
+        ! Arguments
+        type(c_ptr), value :: self_ptr
+        type(c_ptr), value :: args_ptr
+        type(c_ptr)        :: resul
+
+        ! Variables in args_ptr
+        type(dict)   :: di_cell
+        type(dict)   :: di_spg
+        real         :: smax
+        type(dict)   :: di_kwargs
+
+        ! Local variables
+        integer, parameter :: NMANDATORY = 3
+        integer :: ierror, narg
+        logical :: friedel, is_friedel
+        character(len=:), allocatable :: fortran_type
+        class(cell_g_type), allocatable :: cell
+        class(spg_type), allocatable :: spg
+        type(reflist_type) :: reflex
+        type(dict) :: di_reflex
+        type(object) :: item
+        type(tuple) :: args, ret
+
+        ierror = 0
+        is_friedel = .false.
+        ierror = dict_create(di_reflex)
+        call clear_error()
+
+        ! Use unsafe_cast_from_c_ptr to cast from c_ptr to tuple/dict
+        call unsafe_cast_from_c_ptr(args,args_ptr)
+
+        ! Get arguments
+        call check_number_of_arguments('py_gener_reflections_shub',args,NMANDATORY,narg,ierror)
+        if (ierror == 0) ierror = args%getitem(item,0)
+        if (ierror == 0) call get_var_from_item('py_gener_reflections_shub','cell',item,di_cell,ierror)
+        if (ierror == 0) call unwrap_cell_g_type(di_cell,cell,ierror)
+        if (ierror == 0) ierror = args%getitem(item,1)
+        if (ierror == 0) call get_var_from_item('py_gener_reflections_shub','spg',item,di_spg,ierror)
+        if (ierror == 0) call unwrap_spg_type(di_spg,spg,ierror)
+        if (ierror == 0) ierror = args%getitem(item,2)
+        if (ierror == 0) call get_var_from_item('py_gener_reflections_shub','smax',item,smax,ierror)
+        if (ierror == 0 .and. narg > NMANDATORY) then
+            ierror = args%getitem(item,3)
+            if (ierror == 0) call get_var_from_item('py_gener_reflections_shub','kwargs',item,di_kwargs,ierror)
+            if (ierror == 0) then
+                call unwrap_dict_item('py_gener_reflections_shub','friedel',di_kwargs,friedel,ierror)
+                if (ierror == 0) then
+                    is_friedel = .true.
+                else
+                    call clear_error()
+                    call err_clear()
+                    ierror = 0
+                end if
+            end if
+        end if
+        if (ierror /= 0 .and. err_cfml%ierr == 0) then
+            err_cfml%ierr = ierror
+            err_cfml%msg = 'py_gener_reflections_shub: error parsing arguments'
+        end if
+
+        ! Check types
+        if (ierror == 0) then
+            ierror = di_cell%getitem(fortran_type,"fortran_type")
+            if (fortran_type /= 'cell_g_type') then
+                ierror = -1
+                err_cfml%ierr = ierror
+                err_cfml%msg = 'py_gener_reflections_shub: cell dictionary must have fortran_type = cell_g_type'
+            end if
+        end if
+        if (ierror == 0) then
+            ierror = di_spg%getitem(fortran_type,"fortran_type")
+            if (fortran_type /= 'spg_type') then
+                ierror = -1
+                err_cfml%ierr = ierror
+                err_cfml%msg = 'py_gener_reflections_shub: spg dictionary must have fortran_type = spg_type'
+            end if
+        end if
+
+        ! Calling Fortran procedure
+        if (ierror == 0) then
+            if (.not. is_friedel) then
+                call gener_reflections_shub(cell,spg,smax,reflex)
+            else
+                call gener_reflections_shub(cell,spg,smax,reflex,friedel)
+            end if
+        end if
+        if (ierror == 0) ierror = err_cfml%ierr
+        if (ierror == 0) call wrap_reflist_type(reflex,di_reflex,ierror)
+
+        ! Return
+        if (ierror /= 0) call err_clear()
+        ierror = tuple_create(ret,3)
+        ierror = ret%setitem(0,err_cfml%ierr)
+        ierror = ret%setitem(1,trim(err_cfml%msg))
+        ierror = ret%setitem(2,di_reflex)
+        resul = ret%get_c_ptr()
+
+    end function py_gener_reflections_shub
 
     function py_get_h_info(self_ptr,args_ptr) result(resul) bind(c)
 

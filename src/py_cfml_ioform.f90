@@ -217,6 +217,7 @@ module py_cfml_ioform
             else if (is_orbits) then
                 call read_xtal_structure(filename,cell,spg,atm)
             end if
+            ierror = err_cfml%ierr
         end if
 
         ! Orbits
