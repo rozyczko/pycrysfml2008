@@ -49,6 +49,7 @@ MANIFEST
 
 # VSCode files
 fullprofapp.code-workspace
+testing.py
 
 # Install files
 make_ifort_pycrysfml08_oier.bat
@@ -67,6 +68,7 @@ htmlcov/
 nosetests.xml
 coverage.xml
 *.cover
+*.cif
 *.py,cover
 .hypothesis/
 .pytest_cache/
