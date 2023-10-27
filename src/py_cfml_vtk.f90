@@ -389,7 +389,7 @@ module py_cfml_vtk
             nu_D = nexus%angles(7,k)
             phi = nexus%angles(1,k) + current_instrm%ang_offsets(5)
             chi = nexus%angles(2,k) + current_instrm%ang_offsets(4)
-            if (nexus%scan_type == 'canne') then
+            if (nexus%is_canne) then
                 ome = nexus%angles(6,k) + current_instrm%ang_offsets(3)
             else
                 ome = nexus%angles(3,k) + current_instrm%ang_offsets(3)
