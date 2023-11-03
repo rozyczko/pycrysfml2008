@@ -57,6 +57,18 @@ ifort /c /fpp /nologo /Warn ..\..\src\py_cfml_atoms.f90 /I%CRYSFML08_INCLUDE_DIR
 link py_cfml_atoms.obj /out:"py_cfml_atoms.dll" /libpath:%CRYSFML08_LIB_DIR% /dll %LIBPYTHON% libCrysFML08.a
 move py_cfml_atoms.dll %INSTALLATION_DIR%\py_cfml_atoms.pyd
 
+rem CFML_BckPeaks
+echo Building py_cfml_bckpeaks.pyd
+ifort /c /fpp /nologo /Warn ..\..\src\py_cfml_bckpeaks.f90 /I%CRYSFML08_INCLUDE_DIR%
+link py_cfml_bckpeaks.obj /out:"py_cfml_bckpeaks.dll" /libpath:%CRYSFML08_LIB_DIR% /dll %LIBPYTHON% libCrysFML08.a
+move py_cfml_bckpeaks.dll %INSTALLATION_DIR%\py_cfml_bckpeaks.pyd
+
+rem CFML_DiffPatt
+echo Building py_cfml_diffpatt.pyd
+ifort /c /fpp /nologo /Warn ..\..\src\py_cfml_diffpatt.f90 /I%CRYSFML08_INCLUDE_DIR%
+link py_cfml_diffpatt.obj /out:"py_cfml_diffpatt.dll" /libpath:%CRYSFML08_LIB_DIR% /dll %LIBPYTHON% libCrysFML08.a
+move py_cfml_diffpatt.dll %INSTALLATION_DIR%\py_cfml_diffpatt.pyd
+
 rem CFML_gSpaceGroups
 echo Building py_cfml_gspacegroups.pyd
 ifort /c /fpp /nologo /Warn ..\..\src\py_cfml_gspacegroups.f90 /I%CRYSFML08_INCLUDE_DIR%

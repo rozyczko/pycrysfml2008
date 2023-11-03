@@ -35,7 +35,7 @@ module py_cfml_diffpatt
 
     use cfml_diffpatt, only: read_pattern,diffpat_g_type
     use cfml_globaldeps, only: err_cfml,clear_error
-    use cfml_python, only: check_number_of_arguments,get_var_from_item,unwrap_dict_item,wrap_diffpat_type
+    use cfml_python, only: check_number_of_arguments,get_var_from_item,unwrap_dict_item,wrap_diffpat_type,unwrap_dict_item_string_alloc
 
     implicit none
 
@@ -137,7 +137,7 @@ module py_cfml_diffpatt
                 if (ierror == 0) is_kwargs = .true.
             end if
             if (ierror == 0 .and. is_kwargs) then
-                call unwrap_dict_item('py_read_pattern','mode',di_kwargs,mode,ierror)
+                call unwrap_dict_item_string_alloc('py_read_pattern','mode',di_kwargs,mode,ierror)
                 if (ierror /= 0) then
                     call err_clear()
                     call clear_error()
@@ -153,7 +153,7 @@ module py_cfml_diffpatt
                 else
                     is_sig = .true.
                 end if
-                call unwrap_dict_item('py_read_pattern','header',di_kwargs,header,ierror)
+                call unwrap_dict_item_string_alloc('py_read_pattern','header',di_kwargs,header,ierror)
                 if (ierror /= 0) then
                     call err_clear()
                     call clear_error()
@@ -165,7 +165,7 @@ module py_cfml_diffpatt
         end if
         if (ierror /= 0 .and. err_cfml%ierr == 0) then
             err_cfml%ierr = ierror
-            err_cfml%msg = 'py_read_xtal_structure: error parsing arguments'
+            err_cfml%msg = 'py_read_pattern: error parsing arguments'
         end if
 
         ! Call Fortran procedure
