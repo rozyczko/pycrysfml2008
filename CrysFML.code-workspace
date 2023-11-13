@@ -1,0 +1,12 @@
+{
+	"folders": [
+		{
+			"path": "../CrysFML"
+		},
+		{
+			"name": "pycrysfml08",
+			"path": "."
+		}
+	],
+	"settings": {}
+}
