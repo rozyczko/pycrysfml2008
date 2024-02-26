@@ -36,6 +36,10 @@ CRYSFML08_INCLUDE_DIR=""
 CRYSFML08_LIB_DIR=""
 INSTALLATION_DIR=$INSTALLATION_DIR/pycrysfml08
 
+if [ ! -d $INSTALLATION_DIR ]; then
+    mkdir $INSTALLATION_DIR
+fi
+
 echo Building CFML_Atoms
 ifort -fPIC -fpp -c ../../src/py_cfml_atoms.f90 -I$CRYSFML08_INCLUDE_DIR
 ifort -shared -o py_cfml_atoms.so py_cfml_atoms.o -L $CRYSFML08_LIB_DIR -l CrysFML08
@@ -47,9 +51,9 @@ ifort -shared -o py_cfml_diffpatt.so py_cfml_diffpatt.o -L $CRYSFML08_LIB_DIR -l
 mv py_cfml_diffpatt.so $INSTALLATION_DIR
 
 echo Building CFML_gSpaceGroups
-ifort -fPIC -fpp -c ../../src/py_cfml_spacegroups.f90 -I$CRYSFML08_INCLUDE_DIR
-ifort -shared -o py_cfml_spacegroups.so py_cfml_spacegroups.o -L $CRYSFML08_LIB_DIR -l CrysFML08
-mv py_cfml_spacegroups.so $INSTALLATION_DIR
+ifort -fPIC -fpp -c ../../src/py_cfml_gspacegroups.f90 -I$CRYSFML08_INCLUDE_DIR
+ifort -shared -o py_cfml_gspacegroups.so py_cfml_gspacegroups.o -L $CRYSFML08_LIB_DIR -l CrysFML08
+mv py_cfml_gspacegroups.so $INSTALLATION_DIR
 
 echo Building CFML_IOForm
 ifort -fPIC -fpp -c ../../src/py_cfml_ioform.f90 -I$CRYSFML08_INCLUDE_DIR
