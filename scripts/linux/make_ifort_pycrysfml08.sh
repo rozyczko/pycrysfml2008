@@ -86,4 +86,3 @@ ifort -shared -o py_cfml_sxtal_geom.so py_cfml_sxtal_geom.o -L $CRYSFML08_LIB_DI
 mv py_cfml_sxtal_geom.so $INSTALLATION_DIR
 
 rm *.o *.mod
-fi
