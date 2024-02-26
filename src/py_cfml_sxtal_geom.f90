@@ -1,13 +1,13 @@
 !-------------------------------------------------------------
-! cfml_sxtal_geom
+! PyCrysFML08
 ! -------------------------------------------------------------
-! This file is part of cfml_sxtal_geom
+! This file is part of PyCrysFML08
 !
-! The cfml_sxtal_geom is distributed under LGPL. In agreement with the
+! The PyCrysFML08 is distributed under LGPL. In agreement with the
 ! Intergovernmental Convention of the ILL, this software cannot be used
 ! in military applications.
 !
-! cfml_sxtal_geom is based on Elias Rabel work for Forpy, see <https://github.com/ylikx/forpy>.
+! PyCrysFML08 is based on Elias Rabel work for Forpy, see <https://github.com/ylikx/forpy>.
 !
 ! Copyright (C) 2020-2022  Institut Laue-Langevin (ILL), Grenoble, FRANCE
 !
@@ -33,9 +33,9 @@ module py_cfml_sxtal_geom
     use forpy_mod
     use iso_c_binding
 
-    use cfml_globaldeps
-    use cfml_messages
-    use cfml_sxtal_geom
+    use cfml_globaldeps, only: err_cfml,clear_error
+    use cfml_python, only: check_number_of_arguments,get_var_from_item,ndarray_to_pointer,pointer_to_array,pointer_to_array_alloc,unwrap_dict_item,unwrap_dict_item_string_alloc
+    use cfml_sxtal_geom, only: ganu_from_xz,ubfrqcel,z1frmd,z1frnb
 
     implicit none
 
@@ -69,53 +69,17 @@ module py_cfml_sxtal_geom
 
         ! Build method table
         call table_sxtal_geom%init(4)
-        call table_sxtal_geom%add_method("ganu_from_xz","gamma and nu values from x,z pixel coordinates",METH_VARARGS,c_funloc(py_ganu_from_xz))
-        call table_sxtal_geom%add_method("ubfrqcel","ub-matrix from a q-set and cell parameters",METH_VARARGS,c_funloc(py_ubfrqcel))
-        call table_sxtal_geom%add_method("z1frmd","scattering vector for 4C geometry",METH_VARARGS,c_funloc(py_z1frmd))
-        call table_sxtal_geom%add_method("z1frnb","scattering vector for NB geometry",METH_VARARGS,c_funloc(py_z1frnb))
+        call table_sxtal_geom%add_method("ganu_from_xz","py_ganu_from_xyz",METH_VARARGS,c_funloc(py_ganu_from_xyz))
+        call table_sxtal_geom%add_method("ubfrqcel","py_ubfrqcel",METH_VARARGS,c_funloc(py_ubfrqcel))
+        call table_sxtal_geom%add_method("z1frmd","py_z1frmd",METH_VARARGS,c_funloc(py_z1frmd))
+        call table_sxtal_geom%add_method("z1frnb","py_z1frnb",METH_VARARGS,c_funloc(py_z1frnb))
 
         ! Build mod_sxtal_geom
         m = mod_sxtal_geom%init("py_cfml_sxtal_geom","A Python API for CrysFML08",table_sxtal_geom)
 
     end function Init
 
-    function py_ganu_from_xz(self_ptr,args_ptr) result(resul) bind(c)
-        !! author: ILL Scientific Computing Group
-        !! date: 23/03/2023
-        !! display: public
-        !! proc_internals: true
-        !! summary: Compute the gamma and nu values from x,z coordinates on a 2D detector
-        !
-        !! Compute the gamma and nu values from x,z coordinates on a 2D detector
-        !!
-        !! ARGS_PTR = (px,pz,ga_D,nu_D,ipsd,npix,pisi,dist_samp_detector,det_offsets,origin)
-        !   --------           -----------         -----------
-        !   Variable           Python type         Description
-        !   --------           -----------         -----------
-        !   px                 float               x coordinate, in pixels
-        !   pz                 float               z coordinate, in pixels
-        !   ga_D               float               gamma angle of the center of the detector, in degrees
-        !   nu_D               float               nu    angle of the center of the detector, in degrees
-        !   ipsd               integer             detector type
-        !                                          2: flat detector
-        !                                          3: horizontal banana
-        !   npix               ndarray(2,int32)    number of horizontal and vertical pixels
-        !   pisi               ndarray(2,float32)  horizontal and vertical pixel sizes
-        !   dist_samp_detector float               sample detector distance
-        !   det_offsets        ndarray(3,float32)  x, y and z detector offsets
-        !   origin             integer             origin for numbering pixels
-        !                                          0: top    left
-        !                                          1: top    right
-        !                                          2: bottom right
-        !                                          3: bottom left
-        !! RESUL = (ierr,ga_P,nu_P)
-        !   --------           -----------         -----------
-        !   Variable           Python type         Description
-        !   --------           -----------         -----------
-        !   ierr               integer             if ierr /= 0, an error occurred
-        !   err_cfml%msg       string              error message
-        !   ga_P               float               gamma value in degrees
-        !   nu_P               float               nu    value in degrees
+    function py_ganu_from_xyz(self_ptr,args_ptr) result(resul) bind(c)
 
         ! Arguments
         type(c_ptr), value :: self_ptr
@@ -134,104 +98,75 @@ module py_cfml_sxtal_geom
         type(ndarray) :: nd_det_offsets      !! x, y and z detector offsets
         integer       :: origin              !! origin for numbering pixels
 
-        ! Variables in resul
-        integer :: ierr                      !! if ierr /= 0, an error ocurred
-        real    :: ga_P                      !! gamma value in degrees
-        real    :: nu_P                      !! nu    value in degrees
-
         ! Local variables
-        integer :: ierror
+        integer, parameter :: NMANDATORY = 10
+        integer :: ierror,narg
+        integer, dimension(2) :: npix
         integer, dimension(:), pointer :: p_npix
-        real :: x_D,z_D
+        real :: ga_P,nu_P
+        real, dimension(2) :: pisi
+        real, dimension(3) :: det_offsets
         real, dimension(:), pointer :: p_pisi,p_det_offsets
-
         type(object) :: item
         type(tuple) :: args,ret
 
-        call Clear_Error()
         ierror = 0
+        call clear_error()
+
+        ! Use unsafe_cast_from_c_ptr to cast from c_ptr to tuple/dict
+        call unsafe_cast_from_c_ptr(args,args_ptr)
+
+        ! Check the number of items
+        call check_number_of_arguments('py_ganu_from_xyz',args,NMANDATORY,narg,ierror)
 
         ! Get arguments
-        call unsafe_cast_from_c_ptr(args,args_ptr)
         if (ierror == 0) ierror = args%getitem(item,0)
-        if (ierror == 0) ierror = cast(px,item)
+        if (ierror == 0) call get_var_from_item('py_ganu_from_xyz','px',item,px,ierror)
         if (ierror == 0) ierror = args%getitem(item,1)
-        if (ierror == 0) ierror = cast(pz,item)
+        if (ierror == 0) call get_var_from_item('py_ganu_from_xyz','pz',item,pz,ierror)
         if (ierror == 0) ierror = args%getitem(item,2)
-        if (ierror == 0) ierror = cast(ga_D,item)
+        if (ierror == 0) call get_var_from_item('py_ganu_from_xyz','ga_D',item,ga_D,ierror)
         if (ierror == 0) ierror = args%getitem(item,3)
-        if (ierror == 0) ierror = cast(nu_D,item)
+        if (ierror == 0) call get_var_from_item('py_ganu_from_xyz','nu_D',item,nu_D,ierror)
         if (ierror == 0) ierror = args%getitem(item,4)
-        if (ierror == 0) ierror = cast(ipsd,item)
+        if (ierror == 0) call get_var_from_item('py_ganu_from_xyz','ipsd',item,ipsd,ierror)
         if (ierror == 0) ierror = args%getitem(item,5)
-        if (ierror == 0) ierror = cast(nd_npix,item)
-        if (ierror == 0) ierror = nd_npix%get_data(p_npix)
+        if (ierror == 0) call get_var_from_item('py_ganu_from_xyz','npix',item,nd_npix,ierror)
+        if (ierror == 0) call ndarray_to_pointer('py_ganu_from_xyz','npix',nd_npix,p_npix,ierror)
+        if (ierror == 0) call pointer_to_array('py_ganu_from_xyz','npix',p_npix,npix,ierror)
         if (ierror == 0) ierror = args%getitem(item,6)
-        if (ierror == 0) ierror = cast(nd_pisi,item)
-        if (ierror == 0) ierror = nd_pisi%get_data(p_pisi)
+        if (ierror == 0) call get_var_from_item('py_ganu_from_xyz','pisi',item,nd_pisi,ierror)
+        if (ierror == 0) call ndarray_to_pointer('py_ganu_from_xyz','pisi',nd_pisi,p_pisi,ierror)
+        if (ierror == 0) call pointer_to_array('py_ganu_from_xyz','pisi',p_pisi,pisi,ierror)
         if (ierror == 0) ierror = args%getitem(item,7)
-        if (ierror == 0) ierror = cast(dist_samp_detector,item)
+        if (ierror == 0) call get_var_from_item('py_ganu_from_xyz','dist_samp_detector',item,dist_samp_detector,ierror)
         if (ierror == 0) ierror = args%getitem(item,8)
-        if (ierror == 0) ierror = cast(nd_det_offsets,item)
-        if (ierror == 0) ierror = nd_det_offsets%get_data(p_det_offsets)
+        if (ierror == 0) call get_var_from_item('py_ganu_from_xyz','det_offsets',item,nd_det_offsets,ierror)
+        if (ierror == 0) call ndarray_to_pointer('py_ganu_from_xyz','det_offsets',nd_det_offsets,p_det_offsets,ierror)
+        if (ierror == 0) call pointer_to_array('py_ganu_from_xyz','det_offsets',p_det_offsets,det_offsets,ierror)
         if (ierror == 0) ierror = args%getitem(item,9)
-        if (ierror == 0) ierror = cast(origin,item)
+        if (ierror == 0) call get_var_from_item('py_ganu_from_xyz','origin',item,origin,ierror)
+        if (ierror /= 0 .and. err_cfml%ierr == 0) then
+            err_cfml%ierr = ierror
+            err_cfml%msg = 'py_ganu_from_xyz: error parsing arguments'
+        end if
 
-        ! Compute ga_P and nu_P
+        ! Call Fortran procedure
         if (ierror == 0) call ganu_from_xz(px,pz,ga_D,nu_D,ipsd,p_npix,p_pisi,dist_samp_detector,p_det_offsets,origin,ga_P,nu_P)
         if (ierror == 0) ierror = err_cfml%ierr
 
-        ! Return tuple
-        if (ierror == 0) then
-            ierror = tuple_create(ret,4)
-            ierror = ret%setitem(0,0)
-            ierror = ret%setitem(1,trim(err_cfml%msg))
-            ierror = ret%setitem(2,ga_P)
-            ierror = ret%setitem(3,nu_P)
-        else
-            ierr = ierror
-            ierror = tuple_create(ret,2)
-            ierror = ret%setitem(0,ierr)
-            ierror = ret%setitem(1,trim(err_cfml%msg))
-        end if
+        ! Return
+        if (ierror /= 0) call err_clear()
+        ierror = tuple_create(ret,4)
+        ierror = ret%setitem(0,err_cfml%ierr)
+        ierror = ret%setitem(1,trim(err_cfml%msg))
+        ierror = ret%setitem(2,ga_P)
+        ierror = ret%setitem(3,nu_P)
         resul = ret%get_c_ptr()
 
-    end function py_ganu_from_xz
+    end function py_ganu_from_xyz
 
     function py_ubfrqcel(self_ptr,args_ptr) result(resul) bind(c)
-        !! author: ILL Scientific Computing Group
-        !! date: 23/03/2023
-        !! display: public
-        !! proc_internals: true
-        !! summary: Search an UB-matrix from a set of scattering vectors and fixed cell
-        !
-        !!  Generate a list of reflections for a given space group.
-        !!
-        !!  ARGS_PTR = (nd_q,nd_cell,npairs_max,angle_min,rtol,rfac_max)
-        !   --------           -----------           -----------
-        !   Variable           Python type           Description
-        !   --------           -----------           -----------
-        !   spg_id             string                space group (number || symbol)
-        !   nd_q               ndarray(nq,3;float32) set of scattering vectors
-        !   nd_cell            ndarray(6;float32)    cell parameters (a,b,c,alpha,beta,gamma)
-        !   nrefs_max          integer               maximum number of reflections used for finding pairs
-        !   npairs_max         integer               maximum number of pairs to be tested
-        !   angle_min          float                 minimum angle between reflections for testing
-        !   rtol               float                 tolerance in reciprocal space
-        !   rfac_max           float                 maximum allowed rfac
-        !   output_file        str                   Full path of the output file
-        !
-        !!  RESUL = (ierr,msg,nd_ub,nd_rfac)
-        !   --------           -----------         -----------
-        !   Variable           Python type         Description
-        !   --------           -----------         -----------
-        !   ierr               integer             if ierr /= 0, an error occurred
-        !   err_cfml%msg       string              error message
-        !   nd_ub              ndarray(nub,3,3)    ub-matrices
-        !                      np.float32
-        !                      order = F
-        !   nd_rfac            ndarray(nub)        r-factors
-        !                      np.float32
 
         ! Arguments
         type(c_ptr), value :: self_ptr
@@ -247,254 +182,229 @@ module py_cfml_sxtal_geom
         integer       :: npairs_max                  !! maximum number of pairs to be tested
         real          :: angle_min                   !! minimum angle between reflections for testing
         real          :: rfac_max                    !! maximum allowed value for R-factor
-        type(ndarray) :: nd_ub                       !! ub-matrices, dim = [nub,3,3;np.float32)]
-        type(ndarray) :: nd_rfac                     !! r-factors dim = [nub6;np.float32]
-        character(len=:), allocatable :: output_file !! full path of the output file
-
-        ! Variables in resul
-        integer       :: ierr       !! if ierr /= 0, an error ocurred
+        type(dict)    :: di_kwargs
 
         ! Local variables
-        integer :: ierror,i ! Flag error
+        integer, parameter :: NMANDATORY = 8
+        integer :: ierror,narg
+        real, dimension(6) :: cell
         real, dimension(:), pointer :: p_cell
+        real, dimension(:), allocatable :: rfac
         real, dimension(:,:), pointer :: p_q
-        real, dimension(:,:,:), allocatable :: ub   ! ub-matrices
-        real, dimension(:),     allocatable :: rfac ! rfactors for ub-matrices
+        real, dimension(:,:,:), allocatable :: ub
+        character(len=1) :: order
+        character(len=:), allocatable :: filename    !! full path of the output file
+        logical :: is_filename
+        type(ndarray) :: nd_ub                       !! ub-matrices, dim = [nub,3,3;np.float32)]
+        type(ndarray) :: nd_rfac                     !! r-factors dim = [nub;np.float32]
         type(object) :: item
         type(tuple) :: args,ret
 
-        ! Reset error variable
-        ierr   = 0
         ierror = 0
+        is_filename = .false.
         call clear_error()
 
-        ! In case of exception return C_NULL_PTR
-        resul = C_NULL_PTR
+        ! Use unsafe_cast_from_c_ptr to cast from c_ptr to tuple/dict
+        call unsafe_cast_from_c_ptr(args,args_ptr)
+
+        ! Check the number of items
+        call check_number_of_arguments('py_ubfrqcel',args,NMANDATORY,narg,ierror)
 
         ! Get arguments
-        call unsafe_cast_from_c_ptr(args,args_ptr)
         if (ierror == 0) ierror = args%getitem(item,0)
-        if (ierror == 0) ierror = cast(spg_id,item)
+        if (ierror == 0) call get_var_from_item('py_ubfrqcel','spg_id',item,spg_id,ierror)
         if (ierror == 0) ierror = args%getitem(item,1)
-        if (ierror == 0) ierror = cast(nd_q,item)
-        if (ierror == 0) ierror = nd_q%get_data(p_q,order='C')
+        if (ierror == 0) call get_var_from_item('py_ubfrqcel','q',item,nd_q,ierror)
+        if (ierror == 0) call ndarray_to_pointer('py_ubfrqcel','q',nd_q,p_q,ierror,order)
         if (ierror == 0) ierror = args%getitem(item,2)
-        if (ierror == 0) ierror = cast(nd_cell,item)
-        if (ierror == 0) ierror = nd_cell%get_data(p_cell)
+        if (ierror == 0) call get_var_from_item('py_ubfrqcel','cell',item,nd_cell,ierror)
+        if (ierror == 0) call ndarray_to_pointer('py_ubfrqcel','cell',nd_cell,p_cell,ierror)
+        if (ierror == 0) call pointer_to_array('py_ubfrqcel','cell',p_cell,cell,ierror)
         if (ierror == 0) ierror = args%getitem(item,3)
-        if (ierror == 0) ierror = cast(nrefs_max,item)
+        if (ierror == 0) call get_var_from_item('py_ubfrqcel','nrefs_max',item,nrefs_max,ierror)
         if (ierror == 0) ierror = args%getitem(item,4)
-        if (ierror == 0) ierror = cast(npairs_max,item)
+        if (ierror == 0) call get_var_from_item('py_ubfrqcel','npairs_max',item,npairs_max,ierror)
         if (ierror == 0) ierror = args%getitem(item,5)
-        if (ierror == 0) ierror = cast(angle_min,item)
+        if (ierror == 0) call get_var_from_item('py_ubfrqcel','angle_min',item,angle_min,ierror)
         if (ierror == 0) ierror = args%getitem(item,6)
-        if (ierror == 0) ierror = cast(rtol,item)
+        if (ierror == 0) call get_var_from_item('py_ubfrqcel','rtol',item,rtol,ierror)
         if (ierror == 0) ierror = args%getitem(item,7)
-        if (ierror == 0) ierror = cast(rfac_max,item)
-        if (ierror == 0) ierror = args%getitem(item,8)
-        if (ierror == 0) ierror = cast(output_file,item)
-        if (ierror /= 0) then
-            err_cfml%ierr = -1
-            err_cfml%msg = 'py_ubfrqcel: Error getting arguments'
+        if (ierror == 0) call get_var_from_item('py_ubfrqcel','rfac_max',item,rfac_max,ierror)
+        if (ierror == 0 .and. narg > NMANDATORY) then
+            if (ierror == 0) ierror = args%getitem(item,8)
+            if (ierror == 0) call get_var_from_item('py_ubfrqcel','kwargs',item,di_kwargs,ierror)
+            if (ierror == 0) then
+                call unwrap_dict_item_string_alloc('py_ubfrqcel','filename',di_kwargs,filename,ierror)
+                if (ierror /= 0) then
+                    call err_clear()
+                    call clear_error()
+                    ierror = 0
+                else
+                    is_filename = .true.
+                end if
+            end if
+        end if
+        if (ierror /= 0 .and. err_cfml%ierr == 0) then
+            err_cfml%ierr = ierror
+            err_cfml%msg = 'py_ubfrqcel: error parsing arguments'
         end if
 
-        ! Compute ga_P and nu_P
-        if (ierror == 0) call ubfrqcel(spg_id,p_q,p_cell,ub,rfac,nq_max_user=nrefs_max,npairs_max_user=npairs_max,angle_min_user=angle_min,rtol_user=rtol,rfac_max_user=rfac_max,output_file=output_file)
-        if (ierror == 0) ierror = err_cfml%ierr
-
-        ! Return tuple
+        ! Call Fortran procedure
         if (ierror == 0) then
-            ierror = tuple_create(ret,4)
-            ierror = ret%setitem(0,0)
-            ierror = ret%setitem(1,trim(err_cfml%msg))
-            ierror = ndarray_create(nd_ub,ub)
-            ierror = ret%setitem(2,nd_ub)
-            ierror = ndarray_create(nd_rfac,rfac)
-            ierror = ret%setitem(3,nd_rfac)
-        else
-            ierr = ierror
-            ierror = tuple_create(ret,2)
-            ierror = ret%setitem(0,ierr)
-            ierror = ret%setitem(1,trim(err_cfml%msg))
+            if (is_filename) then
+                call ubfrqcel(spg_id,p_q,cell,ub,rfac,nq_max_user=nrefs_max,npairs_max_user=npairs_max,angle_min_user=angle_min,rtol_user=rtol,rfac_max_user=rfac_max,output_file=filename)
+            else
+                call ubfrqcel(spg_id,p_q,cell,ub,rfac,nq_max_user=nrefs_max,npairs_max_user=npairs_max,angle_min_user=angle_min,rtol_user=rtol,rfac_max_user=rfac_max)
+            end if
         end if
+        if (ierror == 0) ierror = err_cfml%ierr
+        if (ierror == 0) then
+            ierror = ndarray_create(nd_ub,ub)
+            ierror = ndarray_create(nd_rfac,rfac)
+        else
+            ierror = ndarray_create_zeros(nd_ub,1)
+            ierror = ndarray_create_zeros(nd_rfac,1)
+        end if
+
+        ! Return
+        if (ierror /= 0) call err_clear()
+        ierror = tuple_create(ret,4)
+        ierror = ret%setitem(0,err_cfml%ierr)
+        ierror = ret%setitem(1,trim(err_cfml%msg))
+        ierror = ret%setitem(2,nd_ub)
+        ierror = ret%setitem(3,nd_rfac)
         resul = ret%get_c_ptr()
 
     end function py_ubfrqcel
 
     function py_z1frmd(self_ptr,args_ptr) result(resul) bind(c)
-        !! author: ILL Scientific Computing Group
-        !! date: 24/03/2023
-        !! display: public
-        !! proc_internals: true
-        !! summary: Wrapper for function z1frmd.
-        !! summary: Compute the scattering vector from angles and wavelength for 4-circle geometry.
-        !!
-        !! ARGS_PTR = (wave,ch,ph,ga,om,nu)
-        !!
-        !! RESUL = (ierr,err_cfml%msg,nd_z1)
-        !  --------           -----------         -----------
-        !  Variable           Python type         Description
-        !  --------           -----------         -----------
-        !  wave               float               wavelength
-        !  ch                 float               chi (degrees)
-        !  ph                 float               phi (degrees)
-        !  ga                 float               gamma (degrees)
-        !  om                 float               omega (degrees)
-        !  nu                 float               nu (degrees)
-        !  ierr               integer             if ierr /= 0, an error occurred
-        !  err_cfml%msg       string              error message
-        !  nd_z1              ndarray(3;float32)  scattering vector
 
         ! Arguments
         type(c_ptr), value :: self_ptr
         type(c_ptr), value :: args_ptr
         type(c_ptr)        :: resul
 
-        ! Python / Fortran interface variables
-        real(kind=cp) :: wave   !! wavelength
-        real(kind=cp) :: ch     !! chi angle (degrees)
-        real(kind=cp) :: ph     !! phi angle (degrees)
-        real(kind=cp) :: ga     !! gamma angle (degrees)
-        real(kind=cp) :: om     !! omega angle (degrees)
-        real(kind=cp) :: nu     !! nu angle (degrees)
-        integer       :: ierr   !! error flag
-        type(ndarray) :: nd_z1  !! scattering vector
+        ! Variables in args_ptr
+        real :: wave   !! wavelength
+        real :: ch     !! chi angle (degrees)
+        real :: ph     !! phi angle (degrees)
+        real :: ga     !! gamma angle (degrees)
+        real :: om     !! omega angle (degrees)
+        real :: nu     !! nu angle (degrees)
 
         ! Local variables
-        integer :: ierror
-        real(kind=cp), dimension(3) :: z1 ! scattering vector
+        integer, parameter :: NMANDATORY = 6
+        integer :: ierror,narg
+        real, dimension(3) :: z1 ! scattering vector
+        type(ndarray) :: nd_z1
         type(object) :: item
         type(tuple) :: args,ret
 
-        ! Reset error variable
-        ierr   = 0
         ierror = 0
         call clear_error()
 
-        ! In case of exception return C_NULL_PTR
-        resul = C_NULL_PTR
-
-        ! Unwrap_arguments
+        ! Use unsafe_cast_from_c_ptr to cast from c_ptr to tuple/dict
         call unsafe_cast_from_c_ptr(args,args_ptr)
+
+        ! Check the number of items
+        call check_number_of_arguments('py_z1frmd',args,NMANDATORY,narg,ierror)
+
+        ! Get arguments
         if (ierror == 0) ierror = args%getitem(item,0)
-        if (ierror == 0) ierror = cast(wave,item)
+        if (ierror == 0) call get_var_from_item('py_z1frmd','wave',item,wave,ierror)
         if (ierror == 0) ierror = args%getitem(item,1)
-        if (ierror == 0) ierror = cast(ch,item)
+        if (ierror == 0) call get_var_from_item('py_z1frmd','ch',item,ch,ierror)
         if (ierror == 0) ierror = args%getitem(item,2)
-        if (ierror == 0) ierror = cast(ph,item)
+        if (ierror == 0) call get_var_from_item('py_z1frmd','ph',item,ph,ierror)
         if (ierror == 0) ierror = args%getitem(item,3)
-        if (ierror == 0) ierror = cast(ga,item)
+        if (ierror == 0) call get_var_from_item('py_z1frmd','ga',item,ga,ierror)
         if (ierror == 0) ierror = args%getitem(item,4)
-        if (ierror == 0) ierror = cast(om,item)
+        if (ierror == 0) call get_var_from_item('py_z1frmd','om',item,om,ierror)
         if (ierror == 0) ierror = args%getitem(item,5)
-        if (ierror == 0) ierror = cast(nu,item)
-        if (ierror /= 0) then
-            err_cfml%ierr = -1
-            err_cfml%msg = 'py_z1frmd: Error getting arguments'
+        if (ierror == 0) call get_var_from_item('py_z1frmd','nu',item,nu,ierror)
+        if (ierror /= 0 .and. err_cfml%ierr == 0) then
+            err_cfml%ierr = ierror
+            err_cfml%msg = 'py_z1frmd: error parsing arguments'
         end if
 
-        ! Call CrysFML procedure
+        ! Call Fortran procedure
         if (ierror == 0) z1 = z1frmd(wave,ch,ph,ga,om,nu)
         if (ierror == 0) ierror = err_cfml%ierr
-
-        ! Return tuple
         if (ierror == 0) then
-            ierror = tuple_create(ret,3)
-            ierror = ret%setitem(0,ierr)
-            ierror = ret%setitem(1,trim(err_cfml%msg))
             ierror = ndarray_create(nd_z1,z1)
-            ierror = ret%setitem(2,nd_z1)
         else
-            ierr   = ierror
-            ierror = tuple_create(ret,2)
-            ierror = ret%setitem(0,ierr)
-            ierror = ret%setitem(1,trim(err_cfml%msg))
+            ierror = ndarray_create_zeros(nd_z1,3)
         end if
+
+        ! Return
+        if (ierror /= 0) call err_clear()
+        ierror = tuple_create(ret,3)
+        ierror = ret%setitem(0,err_cfml%ierr)
+        ierror = ret%setitem(1,trim(err_cfml%msg))
+        ierror = ret%setitem(2,nd_z1)
         resul = ret%get_c_ptr()
 
     end function py_z1frmd
 
     function py_z1frnb(self_ptr,args_ptr) result(resul) bind(c)
-        !! author: ILL Scientific Computing Group
-        !! date: 24/03/2023
-        !! display: public
-        !! proc_internals: true
-        !! summary: Wrapper for function z1frnb.
-        !! summary: Compute the scattering vector from angles and wavelength for normal-beam geometry
-        !!
-        !! ARGS_PTR = (wave,ga,om,nu)
-        !!
-        !! RESUL = (ierr,err_cfml%msg,nd_z1)
-        !  --------           -----------         -----------
-        !  Variable           Python type         Description
-        !  --------           -----------         -----------
-        !  wave               float               wavelength
-        !  ga                 float               gamma (degrees)
-        !  om                 float               omega (degrees)
-        !  nu                 float               nu (degrees)
-        !  ierr               integer             if ierr /= 0, an error occurred
-        !  err_cfml%msg       string              error message
-        !  nd_z1              ndarray(3;float32)  scattering vector
 
         ! Arguments
         type(c_ptr), value :: self_ptr
         type(c_ptr), value :: args_ptr
         type(c_ptr)        :: resul
 
-        ! Python / Fortran interface variables
-        real          :: wave  !! wavelength
-        real          :: ga    !! gamma angle (degrees)
-        real          :: om    !! omega angle (degress)
-        real          :: nu    !! nu angle (degrees)
-        integer       :: ierr  !! error flag
-        type(ndarray) :: nd_z1 !! Scattering vector
+        ! Variables in args_ptr
+        real :: wave   !! wavelength
+        real :: ga     !! gamma angle (degrees)
+        real :: om     !! omega angle (degrees)
+        real :: nu     !! nu angle (degrees)
 
-        ! Other local variables
-        integer :: ierror
-        real(kind=cp), dimension(3) :: z1 ! scattering vector
+        ! Local variables
+        integer, parameter :: NMANDATORY = 4
+        integer :: ierror,narg
+        real, dimension(3) :: z1 ! scattering vector
+        type(ndarray) :: nd_z1
         type(object) :: item
         type(tuple) :: args,ret
 
-        ! Reset error variable
-        ierr = 0
         ierror = 0
         call clear_error()
 
-        ! In case of exception return C_NULL_PTR
-        resul = C_NULL_PTR
-
-        ! Unwrap_arguments
+        ! Use unsafe_cast_from_c_ptr to cast from c_ptr to tuple/dict
         call unsafe_cast_from_c_ptr(args,args_ptr)
+
+        ! Check the number of items
+        call check_number_of_arguments('py_z1frnb',args,NMANDATORY,narg,ierror)
+
+        ! Get arguments
         if (ierror == 0) ierror = args%getitem(item,0)
-        if (ierror == 0) ierror = cast(wave,item)
+        if (ierror == 0) call get_var_from_item('py_z1frnb','wave',item,wave,ierror)
         if (ierror == 0) ierror = args%getitem(item,1)
-        if (ierror == 0) ierror = cast(ga,item)
+        if (ierror == 0) call get_var_from_item('py_z1frnb','ga',item,ga,ierror)
         if (ierror == 0) ierror = args%getitem(item,2)
-        if (ierror == 0) ierror = cast(om,item)
+        if (ierror == 0) call get_var_from_item('py_z1frnb','om',item,om,ierror)
         if (ierror == 0) ierror = args%getitem(item,3)
-        if (ierror == 0) ierror = cast(nu,item)
-        if (ierror /= 0) then
-            err_cfml%ierr = -1
-            err_cfml%msg = 'py_z1frnb: Error getting arguments'
+        if (ierror == 0) call get_var_from_item('py_z1frnb','nu',item,nu,ierror)
+        if (ierror /= 0 .and. err_cfml%ierr == 0) then
+            err_cfml%ierr = ierror
+            err_cfml%msg = 'py_z1frnb: error parsing arguments'
         end if
 
-        ! Call CrysFML procedure
+        ! Call Fortran procedure
         if (ierror == 0) z1 = z1frnb(wave,ga,om,nu)
         if (ierror == 0) ierror = err_cfml%ierr
-
-        ! Return tuple
         if (ierror == 0) then
-            ierror = tuple_create(ret,3)
-            ierror = ret%setitem(0,ierr)
-            ierror = ret%setitem(1,trim(err_cfml%msg))
             ierror = ndarray_create(nd_z1,z1)
-            ierror = ret%setitem(2,nd_z1)
         else
-            ierr   = ierror
-            ierror = tuple_create(ret,2)
-            ierror = ret%setitem(0,ierr)
-            ierror = ret%setitem(1,trim(err_cfml%msg))
+            ierror = ndarray_create_zeros(nd_z1,3)
         end if
+
+        ! Return
+        if (ierror /= 0) call err_clear()
+        ierror = tuple_create(ret,3)
+        ierror = ret%setitem(0,err_cfml%ierr)
+        ierror = ret%setitem(1,trim(err_cfml%msg))
+        ierror = ret%setitem(2,nd_z1)
         resul = ret%get_c_ptr()
 
     end function py_z1frnb
