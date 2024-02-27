@@ -22,6 +22,11 @@ ln -s libcrysfml.a libcrysfml08.a
 cd $CI_PROJECT_DIR/scripts/linux
 ./make_ifort_pycrysfml08.sh
 
+cp $CI_PROJECT_DIR/pycrysfml08/__init__.py $INSTALLATION_DIR/.
+cd $INSTALLATION_DIR
+mkdir Databases
+cp $CRYSFML08_REPO/Src/Databases/magnetic_data.txt $INSTALLATION_DIR/Databases/.
+
 status=$?
 if [ $status -ne 0 ]; then
 	echo "Failure/Error during compilation"
