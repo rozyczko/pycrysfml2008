@@ -8,7 +8,7 @@ export INSTALLATION_DIR=`pwd`/pycrysfml08_dist
 export CRYSFML08_INCLUDE_DIR=${CRYSFML08_DIST}/include
 export CRYSFML08_LIB_DIR=${CRYSFML08_DIST}/lib
 
-git clone https://code.ill.fr/rodriguez-carvajal/CrysFML2008 ${CRYSFML08_REPO}
+git clone --branch powder_mod_fix https://code.ill.fr/rodriguez-carvajal/CrysFML2008 ${CRYSFML08_REPO}
 cd ${CRYSFML08_REPO}
 mkdir build
 cd build
