@@ -72,7 +72,7 @@ make:linux_ifort_bionic:
   artifacts:
     name: "PyCrysfml08 Ubuntu Bionic"
     paths:
-      - "${CI_PROJECT_DIR}/pycrysfml08"
+      - "${CI_PROJECT_DIR}/pycrysfml08_dist"
     when: on_success
 
 make:linux_ifort:
@@ -88,6 +88,6 @@ make:linux_ifort:
   artifacts:
     name: "PyCrysfml08 Ubuntu Latest"
     paths:
-      - "${CI_PROJECT_DIR}/pycrysfml08"
+      - "${CI_PROJECT_DIR}/pycrysfml08_dist"
     when: on_success
 
