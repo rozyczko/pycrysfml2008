@@ -1,4 +1,4 @@
-FROM ubuntu:latest
+FROM ubuntu:jammy
 
 ENV https_proxy http://proxy.ill.fr:8888
 ENV http_proxy http://proxy.ill.fr:8888
