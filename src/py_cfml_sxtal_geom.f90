@@ -50,7 +50,9 @@ module py_cfml_sxtal_geom
     ! Return value must be type(c_ptr),
     ! use the return value of PythonModule%init
     function PyInit_py_cfml_sxtal_geom() bind(c,name="PyInit_py_cfml_sxtal_geom") result(m)
+#ifdef WIN32
     !DEC$ ATTRIBUTES DLLEXPORT :: PyInit_py_cfml_sxtal_geom
+#endif
 
         ! Local variables
         type(c_ptr) :: m

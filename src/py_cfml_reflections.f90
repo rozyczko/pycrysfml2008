@@ -55,7 +55,9 @@ module py_cfml_reflections
     ! Return value must be type(c_ptr),
     ! use the return value of PythonModule%init
     function PyInit_py_cfml_reflections() bind(c,name="PyInit_py_cfml_reflections") result(m)
+#ifdef WIN32
     !DEC$ ATTRIBUTES DLLEXPORT :: PyInit_py_cfml_reflections
+#endif
 
         ! Local variables
         type(c_ptr) :: m
