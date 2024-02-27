@@ -31,14 +31,17 @@
 #
 # -------------------------------------------------------------
 
-INSTALLATION_DIR=""
-CRYSFML08_INCLUDE_DIR=""
-CRYSFML08_LIB_DIR=""
-INSTALLATION_DIR=$INSTALLATION_DIR/pycrysfml08
+#INSTALLATION_DIR=""
+#CRYSFML08_INCLUDE_DIR=""
+#CRYSFML08_LIB_DIR=""
+#INSTALLATION_DIR=$INSTALLATION_DIR/pycrysfml08
 
 if [ ! -d $INSTALLATION_DIR ]; then
     mkdir $INSTALLATION_DIR
 fi
+
+echo Path
+echo `pwd`
 
 echo Building CFML_Atoms
 ifort -fPIC -fpp -c ../../src/py_cfml_atoms.f90 -I$CRYSFML08_INCLUDE_DIR
