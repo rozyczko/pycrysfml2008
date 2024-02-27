@@ -44,7 +44,7 @@ echo Path
 echo `pwd`
 
 echo Building CFML_Atoms
-ifort -fPIC -fpp -c ../../src/py_cfml_atoms.f90 -I$CRYSFML08_INCLUDE_DIR
+ifort -fPIC -fpp -c ../../src/py_cfml_atoms.F90 -I$CRYSFML08_INCLUDE_DIR
 ifort -shared -o py_cfml_atoms.so py_cfml_atoms.o -L $CRYSFML08_LIB_DIR -l CrysFML08
 mv py_cfml_atoms.so $INSTALLATION_DIR
 
