@@ -3,6 +3,8 @@ FROM ubuntu:jammy
 ENV PATH=/opt/intel/bin:$PATH
 ENV LD_LIBRARY_PATH=/opt/intel/lib/intel64
 
+RUN apt-get update && apt install curl libcap2-bin xz-utils -y
+
 # Install recent cmake (3.17)
 # https://askubuntu.com/questions/355565/how-do-i-install-the-latest-version-of-cmake-from-the-command-line
 # So need to install software-properties-common to add kitware repo https://askubuntu.com/questions/493460/how-to-install-add-apt-repository-using-the-terminal
