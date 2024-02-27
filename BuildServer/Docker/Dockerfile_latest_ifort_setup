@@ -1,8 +1,5 @@
 FROM ubuntu:jammy
 
-ENV https_proxy http://proxy.ill.fr:8888
-ENV http_proxy http://proxy.ill.fr:8888
-
 ENV PATH=/opt/intel/bin:$PATH
 ENV LD_LIBRARY_PATH=/opt/intel/lib/intel64
 
@@ -13,8 +10,8 @@ ENV LD_LIBRARY_PATH=/opt/intel/lib/intel64
 RUN apt-get update && apt-get install -y wget \
                        software-properties-common \
                        apt-transport-https && \
-    wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | apt-key add - && \
-    apt-add-repository 'deb https://apt.kitware.com/ubuntu/ jammy main' && \
+#    wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | apt-key add - && \
+#    apt-add-repository 'deb https://apt.kitware.com/ubuntu/ jammy main' && \
     apt-get update && apt-get install -y cmake \
     	    	      	      	      	 git \
                                          python3-pip  && \
