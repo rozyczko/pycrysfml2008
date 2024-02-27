@@ -32,3 +32,6 @@ if [ $status -ne 0 ]; then
 	echo "Failure/Error during compilation"
 	exit $status
 fi
+
+export $PYTHONPATH=${INSTALLATION_DIR}:$PYTHONPATH
+pytest ${CI_PROJECT_DIR}/tests/ -vv
