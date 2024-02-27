@@ -17,5 +17,6 @@ RUN apt-get update && apt-get install -y wget \
     apt-add-repository 'deb https://apt.kitware.com/ubuntu/ bionic main' && \
     apt-get update && apt-get install -y cmake \
     	    	      	      	      	 git \
-                                         python3-pytest
+                                         python3-pip  && \
+    python3 -m pip install pytest deepdiff numpy
 
