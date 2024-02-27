@@ -34,4 +34,5 @@ if [ $status -ne 0 ]; then
 fi
 
 export PYTHONPATH=${PYTHONPATH}:${INSTALLATION_DIR}
+python3-pytest --version
 pytest ${CI_PROJECT_DIR}/tests/ -vv
