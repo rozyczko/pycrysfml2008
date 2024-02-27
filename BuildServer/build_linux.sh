@@ -33,5 +33,5 @@ if [ $status -ne 0 ]; then
 	exit $status
 fi
 
-export $PYTHONPATH=${INSTALLATION_DIR}:$PYTHONPATH
+export $PYTHONPATH=${PYTHONPATH}:${INSTALLATION_DIR}
 pytest ${CI_PROJECT_DIR}/tests/ -vv
