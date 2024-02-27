@@ -14,7 +14,7 @@ RUN apt-get update && apt-get install -y wget \
                        software-properties-common \
                        apt-transport-https && \
     wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | apt-key add - && \
-    apt-add-repository 'deb https://apt.kitware.com/ubuntu/ xenial main' && \
+    apt-add-repository 'deb https://apt.kitware.com/ubuntu/ jammy main' && \
     apt-get update && apt-get install -y cmake \
     	    	      	      	      	 git \
                                          python3-pip  && \
