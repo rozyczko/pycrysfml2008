@@ -62,9 +62,9 @@ make:job-windows:       # This job runs in the build stage, which runs first.
 #make:linux_ifort_jammy:
 #  stage: make
 #  script:
-#    - docker build --force-rm -t ci_crysfml_bionic_ifort -f ${CI_PROJECT_DIR}/BuildServer/Docker/Dockerfile_bionic_ifort_setup .
-#    - docker build --force-rm --no-cache -t ci_crysfml_bionic_ifort_build -f ${CI_PROJECT_DIR}/BuildServer/Docker/Dockerfile_bionic_ifort_build_F2008 --build-arg CI_COMMIT_SHORT_SHA=${CI_COMMIT_SHORT_SHA} --build-arg CI_COMMIT_REF_NAME=${CI_COMMIT_REF_NAME} .
-#    - docker run -i -v${PWD}:/artifacts/ -v/users/ci/projects/fullprof/intel:/opt/intel ci_crysfml_bionic_ifort_build
+#    - docker build --force-rm -t ci_crysfml_jammy_ifort -f ${CI_PROJECT_DIR}/BuildServer/Docker/Dockerfile_jammy_ifort_setup .
+#    - docker build --force-rm --no-cache -t ci_crysfml_jammy_ifort_build -f ${CI_PROJECT_DIR}/BuildServer/Docker/Dockerfile_jammy_ifort_build_F2008 --build-arg CI_COMMIT_SHORT_SHA=${CI_COMMIT_SHORT_SHA} --build-arg CI_COMMIT_REF_NAME=${CI_COMMIT_REF_NAME} .
+#    - docker run -i -v${PWD}:/artifacts/ -v/users/ci/projects/fullprof/intel:/opt/intel ci_crysfml_jammy_ifort_build
 #  tags:
 #    - docker
 #    - sci
@@ -78,9 +78,9 @@ make:job-windows:       # This job runs in the build stage, which runs first.
 make:linux_ifort_focal:
   stage: make
   script:
-    - docker build --force-rm -t ci_crysfml_latest_ifort -f ${CI_PROJECT_DIR}/BuildServer/Docker/Dockerfile_latest_ifort_setup .
-    - docker build --force-rm --no-cache -t ci_crysfml_latest_ifort_build -f ${CI_PROJECT_DIR}/BuildServer/Docker/Dockerfile_latest_ifort_build_F2008 --build-arg CI_COMMIT_SHORT_SHA=${CI_COMMIT_SHORT_SHA} --build-arg CI_COMMIT_REF_NAME=${CI_COMMIT_REF_NAME} .
-    - docker run -i -v${PWD}:/artifacts/ -v/users/ci/projects/fullprof/intel:/opt/intel ci_crysfml_latest_ifort_build
+    - docker build --force-rm -t ci_crysfml_focal_ifort -f ${CI_PROJECT_DIR}/BuildServer/Docker/Dockerfile_focal_ifort_setup .
+    - docker build --force-rm --no-cache -t ci_crysfml_focal_ifort_build -f ${CI_PROJECT_DIR}/BuildServer/Docker/Dockerfile_focal_ifort_build_F2008 --build-arg CI_COMMIT_SHORT_SHA=${CI_COMMIT_SHORT_SHA} --build-arg CI_COMMIT_REF_NAME=${CI_COMMIT_REF_NAME} .
+    - docker run -i -v${PWD}:/artifacts/ -v/users/ci/projects/fullprof/intel:/opt/intel ci_crysfml_focal_ifort_build
   tags:
     - docker
     - sci
