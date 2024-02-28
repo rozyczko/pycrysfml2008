@@ -37,7 +37,12 @@ git clone --branch powder_mod_fix https://code.ill.fr/rodriguez-carvajal/CrysFML
 cd ${CRYSFML08_REPO}
 mkdir build
 cd build
-cmake -D ARCH32=OFF -D PYTHON_API=OFF -D CMAKE_BUILD_TYPE=Debug -D CMAKE_Fortran_COMPILER=$compiler -D CMAKE_INSTALL_PREFIX=${CRYSFML08_DIST} ..
+
+if [ $compiler = "ifx" ]; then
+	cmake -D CMAKE_POSITION_INDEPENDENT_CODE=ON -D ARCH32=OFF -D PYTHON_API=OFF -D CMAKE_BUILD_TYPE=Debug -D CMAKE_Fortran_COMPILER=$compiler -D CMAKE_INSTALL_PREFIX=${CRYSFML08_DIST} ..
+else
+	cmake -D ARCH32=OFF -D PYTHON_API=OFF -D CMAKE_BUILD_TYPE=Debug -D CMAKE_Fortran_COMPILER=$compiler -D CMAKE_INSTALL_PREFIX=${CRYSFML08_DIST} ..
+fi
 cmake --build .
 make install
 
