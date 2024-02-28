@@ -41,6 +41,8 @@ cd build
 if [ $compiler = "ifx" ]; then
 	. /opt/intel/oneapi/setvars.sh 
 	echo $PATH
+	which ifx
+	compiler = "/opt/intel/oneapi/compiler/2024.0/bin/ifx"
 	cmake -D CMAKE_POSITION_INDEPENDENT_CODE=ON -D ARCH32=OFF -D PYTHON_API=OFF -D CMAKE_BUILD_TYPE=Debug -D CMAKE_Fortran_COMPILER=$compiler -D CMAKE_INSTALL_PREFIX=${CRYSFML08_DIST} ..
 else
 	cmake -D ARCH32=OFF -D PYTHON_API=OFF -D CMAKE_BUILD_TYPE=Debug -D CMAKE_Fortran_COMPILER=$compiler -D CMAKE_INSTALL_PREFIX=${CRYSFML08_DIST} ..
