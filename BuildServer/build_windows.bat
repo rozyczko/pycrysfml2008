@@ -1,7 +1,7 @@
 md %CI_PROJECT_DIR%\\crysfml08_dist
 set CRYSFML08_INSTALL=%CI_PROJECT_DIR%\\crysfml08_dist
 md %CI_PROJECT_DIR%\\pycrysfml08_dist
-set INSTALLATION_DIR=%CI_PROJECT_DIR%\\pycrysfml08_dist
+set INSTALLATION_DIR=%CI_PROJECT_DIR%\pycrysfml08_dist
 git clone https://code.ill.fr/rodriguez-carvajal/CrysFML2008 crysfml2008_repo
 cd crysfml2008_repo && md build && cd build && cmake -G "NMake Makefiles" -D CMAKE_BUILD_TYPE=Debug -D CMAKE_INSTALL_PREFIX=%CRYSFML08_INSTALL% .. && cmake --build . && cmake --install . 
 cd %CRYSFML08_INSTALL%\\lib

@@ -29,9 +29,10 @@ rem License along with this library; if not, see <http://www.gnu.org/licenses/>.
 rem
 rem -------------------------------------------------------------
 
-set INSTALLATION_DIR=%INSTALLATION_DIR%\\pycrysfml08
-set CRYSFML08_INCLUDE_DIR=%CRYSFML08_INSTALL%\\include
-set CRYSFML08_LIB_DIR=%CRYSFML08_INSTALL%\\lib
+set INSTALLATION_DIR=%INSTALLATION_DIR%\pycrysfml08
+md %INSTALLATION_DIR%
+set CRYSFML08_INCLUDE_DIR=%CRYSFML08_INSTALL%\include
+set CRYSFML08_LIB_DIR=%CRYSFML08_INSTALL%\lib
 
 echo "INSTALLATION_DIR" %INSTALLATION_DIR%
 
