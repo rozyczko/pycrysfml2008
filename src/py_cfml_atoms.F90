@@ -52,7 +52,9 @@ module py_cfml_atoms
     ! Return value must be type(c_ptr),
     ! use the return value of PythonModule%init
     function PyInit_py_cfml_atoms() bind(c,name="PyInit_py_cfml_atoms") result(m)
+#ifdef WIN32 
     !DEC$ ATTRIBUTES DLLEXPORT :: PyInit_py_cfml_atoms
+#endif
 
         ! Local variables
         type(c_ptr) :: m

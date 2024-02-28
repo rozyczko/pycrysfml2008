@@ -1,4 +1,4 @@
-FROM ci_crysfml_xenial_ifort
+FROM ci_crysfml_bionic_ifort
 
 SHELL ["/bin/bash", "-c"]
 
