@@ -1,4 +1,26 @@
-echo "Building PyCrysFML08 with ifort"
+#
+# Default Options
+#
+compiler="ifort"
+#
+# Arguments
+#
+for arg in "$@"
+do
+   case "$arg" in
+      "ifort")
+         compiler=$arg
+         ;;
+      "gfortran")
+         compiler=$arg
+         ;;
+      "ifx")
+         compiler=$arg
+         ;;
+   esac
+done
+
+echo "Building PyCrysFML08 with " $compiler
 
 export CI_PROJECT_DIR=`pwd`
 export CRYSFML08_REPO=`pwd`/crysfml08_repo
@@ -15,7 +37,7 @@ git clone --branch powder_mod_fix https://code.ill.fr/rodriguez-carvajal/CrysFML
 cd ${CRYSFML08_REPO}
 mkdir build
 cd build
-cmake -D ARCH32=OFF -D PYTHON_API=OFF -D CMAKE_BUILD_TYPE=Debug -D CMAKE_Fortran_COMPILER=ifort -D CMAKE_INSTALL_PREFIX=${CRYSFML08_DIST} ..
+cmake -D ARCH32=OFF -D PYTHON_API=OFF -D CMAKE_BUILD_TYPE=Debug -D CMAKE_Fortran_COMPILER=$compiler -D CMAKE_INSTALL_PREFIX=${CRYSFML08_DIST} ..
 cmake --build .
 make install
 
@@ -29,7 +51,7 @@ if [ ! -d $INSTALLATION_DIR ]; then
 fi
 
 cd $CI_PROJECT_DIR/scripts/linux
-./make_ifort_pycrysfml08.sh
+./make_ifort_pycrysfml08.sh $compiler
 
 mv $CI_PROJECT_DIR/pycrysfml08/__init__.py $INSTALLATION_DIR/pycrysfml08/.
 rmdir $CI_PROJECT_DIR/pycrysfml08

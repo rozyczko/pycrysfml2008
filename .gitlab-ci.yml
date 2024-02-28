@@ -86,7 +86,23 @@ make:linux_ifort_focal:
     - sci
     - ubuntu18
   artifacts:
-    name: "PyCrysfml08 Ubuntu Focal"
+    name: "PyCrysfml08 Ubuntu Focal Ifort"
+    paths:
+      - "${CI_PROJECT_DIR}/pycrysfml08_dist"
+    when: on_success
+
+make:linux_gfortran_focal:
+  stage: make
+  script:
+    - docker build --force-rm -t ci_crysfml_focal_gfortran -f ${CI_PROJECT_DIR}/BuildServer/Docker/Dockerfile_focal_gfortran_setup .
+    - docker build --force-rm --no-cache -t ci_crysfml_focal_gfortran_build -f ${CI_PROJECT_DIR}/BuildServer/Docker/Dockerfile_focal_gfortran_build_F2008 --build-arg CI_COMMIT_SHORT_SHA=${CI_COMMIT_SHORT_SHA} --build-arg CI_COMMIT_REF_NAME=${CI_COMMIT_REF_NAME} .
+    - docker run -i -v${PWD}:/artifacts/  ci_crysfml_focal_gfortran_build
+  tags:
+    - docker
+    - sci
+    - ubuntu18
+  artifacts:
+    name: "PyCrysfml08 Ubuntu Focal Gfortran"
     paths:
       - "${CI_PROJECT_DIR}/pycrysfml08_dist"
     when: on_success

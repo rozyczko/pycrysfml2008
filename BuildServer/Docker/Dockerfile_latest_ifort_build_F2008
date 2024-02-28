@@ -17,4 +17,4 @@ WORKDIR /app
 
 ENV CRYSFML08=${WORKDIR}
 
-CMD BuildServer/build_linux.sh && cp -a pycrysfml08_dist /artifacts/
+CMD BuildServer/build_linux.sh ifort && cp -a pycrysfml08_dist /artifacts/

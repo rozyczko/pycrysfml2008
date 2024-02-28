@@ -1,4 +1,4 @@
-FROM ci_crysfml_bionic_ifort
+FROM ci_crysfml_focal_gfortran
 
 SHELL ["/bin/bash", "-c"]
 
@@ -8,13 +8,9 @@ ARG CI_COMMIT_REF_NAME
 ENV CI_COMMIT_SHORT_SHA=${CI_COMMIT_SHORT_SHA}
 ENV CI_COMMIT_REF_NAME=${CI_COMMIT_REF_NAME}
 
-ENV PATH=/opt/intel/bin:$PATH
-ENV LD_LIBRARY_PATH=/opt/intel/lib/intel64
-
-
 COPY ./ /app/
 WORKDIR /app
 
 ENV CRYSFML08=${WORKDIR}
 
-CMD BuildServer/build_linux.sh ifort && cp -a pycrysfml08 /artifacts/
+CMD BuildServer/build_linux.sh gfortran && cp -a pycrysfml08_dist /artifacts/
