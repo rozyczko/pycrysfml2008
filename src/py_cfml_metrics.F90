@@ -55,8 +55,9 @@ module py_cfml_metrics
     ! Return value must be type(c_ptr),
     ! use the return value of PythonModule%init
     function PyInit_py_cfml_metrics() bind(c,name="PyInit_py_cfml_metrics") result(m)
-    !DEC$ ATTRIBUTES DLLEXPORT :: PyInit_py_cfml_metrics
-
+#ifdef WIN32
+        !DEC$ ATTRIBUTES DLLEXPORT :: PyInit_py_cfml_metrics
+#endif
         ! Local variables
         type(c_ptr) :: m
 

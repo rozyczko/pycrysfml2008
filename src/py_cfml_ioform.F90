@@ -54,7 +54,9 @@ module py_cfml_ioform
     ! Return value must be type(c_ptr),
     ! use the return value of PythonModule%init
     function PyInit_py_cfml_ioform() bind(c,name="PyInit_py_cfml_ioform") result(m)
+#ifdef WIN32
     !DEC$ ATTRIBUTES DLLEXPORT :: PyInit_py_cfml_ioform
+#endif
 
         ! Local variables
         type(c_ptr) :: m

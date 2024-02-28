@@ -59,23 +59,23 @@ make:job-windows:       # This job runs in the build stage, which runs first.
     when: on_success
 
 
-make:linux_ifort_xenial:
-  stage: make
-  script:
-    - docker build --force-rm -t ci_crysfml_xenial_ifort -f ${CI_PROJECT_DIR}/BuildServer/Docker/Dockerfile_xenial_ifort_setup .
-    - docker build --force-rm --no-cache -t ci_crysfml_xenial_ifort_build -f ${CI_PROJECT_DIR}/BuildServer/Docker/Dockerfile_xenial_ifort_build_F2008 --build-arg CI_COMMIT_SHORT_SHA=${CI_COMMIT_SHORT_SHA} --build-arg CI_COMMIT_REF_NAME=${CI_COMMIT_REF_NAME} .
-    - docker run -i -v${PWD}:/artifacts/ -v/users/ci/projects/fullprof/intel:/opt/intel ci_crysfml_xenial_ifort_build
-  tags:
-    - docker
-    - sci
-    - ubuntu
-  artifacts:
-    name: "PyCrysfml08 Ubuntu Xenial"
-    paths:
-      - "${CI_PROJECT_DIR}/pycrysfml08"
-    when: on_success
+#make:linux_ifort_jammy:
+#  stage: make
+#  script:
+#    - docker build --force-rm -t ci_crysfml_bionic_ifort -f ${CI_PROJECT_DIR}/BuildServer/Docker/Dockerfile_bionic_ifort_setup .
+#    - docker build --force-rm --no-cache -t ci_crysfml_bionic_ifort_build -f ${CI_PROJECT_DIR}/BuildServer/Docker/Dockerfile_bionic_ifort_build_F2008 --build-arg CI_COMMIT_SHORT_SHA=${CI_COMMIT_SHORT_SHA} --build-arg CI_COMMIT_REF_NAME=${CI_COMMIT_REF_NAME} .
+#    - docker run -i -v${PWD}:/artifacts/ -v/users/ci/projects/fullprof/intel:/opt/intel ci_crysfml_bionic_ifort_build
+#  tags:
+#    - docker
+#    - sci
+#    - ubuntu22
+#  artifacts:
+#    name: "PyCrysfml08 Ubuntu Jammy"
+#    paths:
+#      - "${CI_PROJECT_DIR}/pycrysfml08_dist"
+#    when: on_success
 
-make:linux_ifort:
+make:linux_ifort_focal:
   stage: make
   script:
     - docker build --force-rm -t ci_crysfml_latest_ifort -f ${CI_PROJECT_DIR}/BuildServer/Docker/Dockerfile_latest_ifort_setup .
@@ -84,10 +84,10 @@ make:linux_ifort:
   tags:
     - docker
     - sci
-    - ubuntu
+    - ubuntu18
   artifacts:
-    name: "PyCrysfml08 Ubuntu Latest"
+    name: "PyCrysfml08 Ubuntu Focal"
     paths:
-      - "${CI_PROJECT_DIR}/pycrysfml08"
+      - "${CI_PROJECT_DIR}/pycrysfml08_dist"
     when: on_success
 
