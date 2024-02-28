@@ -30,8 +30,10 @@ rem
 rem -------------------------------------------------------------
 
 set INSTALLATION_DIR=%INSTALLATION_DIR%\\pycrysfml08
-set CRYSFML08_INCLUDE_DIR= %CRYSFML08_INSTALL%\\include
-set CRYSFML08_LIB_DIR= ""%CRYSFML08_INSTALL%\\lib
+set CRYSFML08_INCLUDE_DIR=%CRYSFML08_INSTALL%\\include
+set CRYSFML08_LIB_DIR=%CRYSFML08_INSTALL%\\lib
+
+echo "INSTALLATION_DIR" %INSTALLATION_DIR%
 
 rem CFML_Atoms
 echo Building py_cfml_atoms.pyd
