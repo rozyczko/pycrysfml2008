@@ -8,8 +8,8 @@ ARG CI_COMMIT_REF_NAME
 ENV CI_COMMIT_SHORT_SHA=${CI_COMMIT_SHORT_SHA}
 ENV CI_COMMIT_REF_NAME=${CI_COMMIT_REF_NAME}
 
-ENV PATH=/opt/intel/bin:$PATH
-ENV LD_LIBRARY_PATH=/opt/intel/lib/intel64
+ENV PATH=/opt/intel/oneapi/compiler/2024.0/bin:$PATH
+ENV LD_LIBRARY_PATH=/opt/intel/oneapi/compiler/2024.0/lib/intel64
 
 
 COPY ./ /app/
