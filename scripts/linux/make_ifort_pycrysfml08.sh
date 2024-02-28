@@ -53,9 +53,9 @@ do
    esac
 done
 
-if [$compiler == "ifort"];
+if [ $compiler = "ifort" ]; then
     FFLAGS="-fPIC -fpp"
-elif [$compiler == "gfortran"]; then
+elif [ $compiler = "gfortran" ]; then
     FFLAGS="-fPIC -cpp"
 fi
 
