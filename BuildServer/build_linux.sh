@@ -56,7 +56,7 @@ if [ ! -d $INSTALLATION_DIR ]; then
 fi
 
 cd $CI_PROJECT_DIR/scripts/linux
-./make_ifort_pycrysfml08.sh $compiler
+./make_pycrysfml08.sh $compiler
 
 mv $CI_PROJECT_DIR/pycrysfml08/__init__.py $INSTALLATION_DIR/pycrysfml08/.
 rmdir $CI_PROJECT_DIR/pycrysfml08
