@@ -56,7 +56,7 @@ done
 if [ $compiler = "ifort" ]; then
     FFLAGS="-fPIC -fpp"
 elif [ $compiler = "gfortran" ]; then
-    FFLAGS="-fPIC -cpp"
+    FFLAGS="-fPIC -cpp -O0 -std=f2008 -ffree-line-length-0 -fdec-math -fall-intrinsics"
 fi
 
 #INSTALLATION_DIR=""
