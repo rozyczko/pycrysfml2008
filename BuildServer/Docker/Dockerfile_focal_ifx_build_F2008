@@ -16,4 +16,4 @@ WORKDIR /app
 
 ENV CRYSFML08=${WORKDIR}
 
-CMD BuildServer/build_linux.sh ifx && cp -a pycrysfml08_dist /artifacts/
+CMD . /opt/intel/oneapi/setvars.sh && BuildServer/build_linux.sh ifx && cp -a pycrysfml08_dist /artifacts/

@@ -1,8 +1,5 @@
 FROM ubuntu:focal
 
-ENV PATH=/opt/intel/bin:$PATH
-ENV LD_LIBRARY_PATH=/opt/intel/lib/intel64
-
 # Install recent cmake (3.17)
 # https://askubuntu.com/questions/355565/how-do-i-install-the-latest-version-of-cmake-from-the-command-line
 # So need to install software-properties-common to add kitware repo https://askubuntu.com/questions/493460/how-to-install-add-apt-repository-using-the-terminal
@@ -17,6 +14,7 @@ RUN apt-get update && apt-get install -y wget \
     echo "deb [signed-by=/usr/share/keyrings/oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main" | tee /etc/apt/sources.list.d/oneAPI.list && \
     apt-get update && apt-get install -y cmake \
     	    	      	      	      	 git \
+                                         intel-hpckit \
                                          python3-pip  && \
     python3 -m pip install pytest deepdiff numpy
 
