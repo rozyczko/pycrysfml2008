@@ -68,7 +68,7 @@ export CRYSFML08_INSTALL=${CRYSFML08_DIST}
 mkdir build
 cd build
 cmake -D CMAKE_POSITION_INDEPENDENT_CODE=ON -D CMAKE_BUILD_TYPE=Debug -D CMAKE_Fortran_COMPILER=$compiler -D CMAKE_INSTALL_PREFIX=${INSTALLATION_DIR} ..
-cmake --build
+cmake --build .
 make install
 
 mv $CI_PROJECT_DIR/pycrysfml08/__init__.py $INSTALLATION_DIR/pycrysfml08/.
