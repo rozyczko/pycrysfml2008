@@ -1,0 +1,20 @@
+FROM ci_crysfml_focal_ifort
+
+SHELL ["/bin/bash", "-c"]
+
+ARG CI_COMMIT_SHORT_SHA
+ARG CI_COMMIT_REF_NAME
+
+ENV CI_COMMIT_SHORT_SHA=${CI_COMMIT_SHORT_SHA}
+ENV CI_COMMIT_REF_NAME=${CI_COMMIT_REF_NAME}
+
+ENV PATH=/opt/intel/bin:$PATH
+ENV LD_LIBRARY_PATH=/opt/intel/lib/intel64
+
+
+COPY ./ /app/
+WORKDIR /app
+
+ENV CRYSFML08=${WORKDIR}
+
+CMD BuildServer/build_linux_cmake.sh ifort && cp -a pycrysfml08_dist /artifacts/

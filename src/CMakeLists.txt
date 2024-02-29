@@ -10,6 +10,11 @@ set(PYCRYSFML08_SOURCES
     py_cfml_sxtal_geom.F90
     )
 
+# Fix a problem on Mac OS X when building shared libraries
+if(APPLE)
+    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -undefined dynamic_lookup")
+endif()
+
 add_library(pycrysfml08 SHARED ${PYCRYSFML08_SOURCES})
 
 target_include_directories(pycrysfml08 PUBLIC ${CRYSFML08_INSTALL}/include)
