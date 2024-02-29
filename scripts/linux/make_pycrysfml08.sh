@@ -55,7 +55,8 @@ done
 
 if [ $compiler = "ifort" ]; then
     FFLAGS="-fPIC -fpp"
-    LFLAGS="/usr/local/Cellar/python@3.8/3.8.5/Frameworks/Python.framework/Versions/3.8/lib/python3.8/config-3.8-darwin"
+    LFLAGS=`python3-config --ldflags --embed`
+    echo $LFLAGS
 elif [ $compiler = "ifx" ]; then
     FFLAGS="-fPIC -fpp"
 elif [ $compiler = "gfortran" ]; then
@@ -74,48 +75,48 @@ fi
 echo Building CFML_Atoms
 echo "$compiler $FFLAGS -c ../../src/py_cfml_atoms.F90 -I$CRYSFML08_INCLUDE_DIR"
 $compiler $FFLAGS -c ../../src/py_cfml_atoms.F90 -I$CRYSFML08_INCLUDE_DIR
-echo "$compiler -shared -o py_cfml_atoms.so py_cfml_atoms.o -L $CRYSFML08_LIB_DIR -l CrysFML08 -L/usr/local/Cellar/python@3.8/3.8.3/Frameworks/Python.framework/Versions/3.8/lib/ -lpython3.8"
-$compiler -shared -o py_cfml_atoms.so py_cfml_atoms.o -L$CRYSFML08_LIB_DIR -l CrysFML08 -L$LFLAGS -l python3.8
+echo "$compiler -shared -o py_cfml_atoms.so py_cfml_atoms.o -L $CRYSFML08_LIB_DIR -l CrysFML08 " $LFLAGS
+$compiler -shared -o py_cfml_atoms.so py_cfml_atoms.o -L$CRYSFML08_LIB_DIR -l CrysFML08 $LFLAGS 
 mv py_cfml_atoms.so $INSTALLATION_DIR
 
 echo Building CFML_DiffPatt
 $compiler $FFLAGS -c ../../src/py_cfml_diffpatt.F90 -I$CRYSFML08_INCLUDE_DIR
-$compiler -shared -o py_cfml_diffpatt.so py_cfml_diffpatt.o -L $CRYSFML08_LIB_DIR -l CrysFML08 -L$LFLAGS -l python3.8
+$compiler -shared -o py_cfml_diffpatt.so py_cfml_diffpatt.o -L $CRYSFML08_LIB_DIR -l CrysFML08 $LFLAGS
 mv py_cfml_diffpatt.so $INSTALLATION_DIR
 
 echo Building CFML_gSpaceGroups
 $compiler $FFLAGS -c ../../src/py_cfml_gspacegroups.F90 -I$CRYSFML08_INCLUDE_DIR
-$compiler -shared -o py_cfml_gspacegroups.so py_cfml_gspacegroups.o -L $CRYSFML08_LIB_DIR -l CrysFML08 -L$LFLAGS -l python3.8
+$compiler -shared -o py_cfml_gspacegroups.so py_cfml_gspacegroups.o -L $CRYSFML08_LIB_DIR -l CrysFML08 $LFLAGS
 mv py_cfml_gspacegroups.so $INSTALLATION_DIR
 
 echo Building CFML_IOForm
 $compiler $FFLAGS -c ../../src/py_cfml_ioform.F90 -I$CRYSFML08_INCLUDE_DIR
-$compiler -shared -o py_cfml_ioform.so py_cfml_ioform.o -L $CRYSFML08_LIB_DIR -l CrysFML08 -L$LFLAGS -l python3.8
+$compiler -shared -o py_cfml_ioform.so py_cfml_ioform.o -L $CRYSFML08_LIB_DIR -l CrysFML08 $LFLAGS
 mv py_cfml_ioform.so $INSTALLATION_DIR
 
 echo Building CFML_Metrics
 $compiler $FFLAGS -c ../../src/py_cfml_metrics.F90 -I$CRYSFML08_INCLUDE_DIR
-$compiler -shared -o py_cfml_metrics.so py_cfml_metrics.o -L $CRYSFML08_LIB_DIR -l CrysFML08 -L$LFLAGS -l python3.8
+$compiler -shared -o py_cfml_metrics.so py_cfml_metrics.o -L $CRYSFML08_LIB_DIR -l CrysFML08 $LFLAGS
 mv py_cfml_metrics.so $INSTALLATION_DIR
 
 echo Building CFML_Profiles
 $compiler $FFLAGS -c ../../src/py_cfml_profiles.F90 -I$CRYSFML08_INCLUDE_DIR
-$compiler -shared -o py_cfml_profiles.so py_cfml_profiles.o -L $CRYSFML08_LIB_DIR -l CrysFML08 -L$LFLAGS -l python3.8
+$compiler -shared -o py_cfml_profiles.so py_cfml_profiles.o -L $CRYSFML08_LIB_DIR -l CrysFML08 $LFLAGS
 mv py_cfml_profiles.so $INSTALLATION_DIR
 
 echo Building CFML_Reflections
 $compiler $FFLAGS -c ../../src/py_cfml_reflections.F90 -I$CRYSFML08_INCLUDE_DIR
-$compiler -shared -o py_cfml_reflections.so py_cfml_reflections.o -L $CRYSFML08_LIB_DIR -l CrysFML08 -L$LFLAGS -l python3.8
+$compiler -shared -o py_cfml_reflections.so py_cfml_reflections.o -L $CRYSFML08_LIB_DIR -l CrysFML08 $LFLAGS
 mv py_cfml_reflections.so $INSTALLATION_DIR
 
 echo Building CFML_Structure_Factors
 $compiler $FFLAGS -c ../../src/py_cfml_structure_factors.F90 -I$CRYSFML08_INCLUDE_DIR
-$compiler -shared -o py_cfml_structure_factors.so py_cfml_structure_factors.o -L $CRYSFML08_LIB_DIR -l CrysFML08 -L$LFLAGS -l python3.8
+$compiler -shared -o py_cfml_structure_factors.so py_cfml_structure_factors.o -L $CRYSFML08_LIB_DIR -l CrysFML08 $LFLAGS
 mv py_cfml_structure_factors.so $INSTALLATION_DIR
 
 echo Building CFML_Sxtal_Geom
 $compiler $FFLAGS -c ../../src/py_cfml_sxtal_geom.F90 -I$CRYSFML08_INCLUDE_DIR
-$compiler -shared -o py_cfml_sxtal_geom.so py_cfml_sxtal_geom.o -L $CRYSFML08_LIB_DIR -l CrysFML08 -L$LFLAGS -l python3.8
+$compiler -shared -o py_cfml_sxtal_geom.so py_cfml_sxtal_geom.o -L $CRYSFML08_LIB_DIR -l CrysFML08 $LFLAGS
 mv py_cfml_sxtal_geom.so $INSTALLATION_DIR
 
 rm *.o *.mod
