@@ -71,8 +71,10 @@ if [ ! -d $INSTALLATION_DIR ]; then
 fi
 
 echo Building CFML_Atoms
+echo "$compiler $FFLAGS -c ../../src/py_cfml_atoms.F90 -I$CRYSFML08_INCLUDE_DIR"
 $compiler $FFLAGS -c ../../src/py_cfml_atoms.F90 -I$CRYSFML08_INCLUDE_DIR
-$compiler -shared -o py_cfml_atoms.so py_cfml_atoms.o -L $CRYSFML08_LIB_DIR -l CrysFML08
+echo "$compiler -shared -o py_cfml_atoms.so py_cfml_atoms.o -L $CRYSFML08_LIB_DIR -l CrysFML08"
+$compiler -shared -o py_cfml_atoms.so py_cfml_atoms.o -L $CRYSFML08_LIB_DIR -l CrysFML08 -L/usr/local/opt/python3/lib/ -lpython3.10
 mv py_cfml_atoms.so $INSTALLATION_DIR
 
 echo Building CFML_DiffPatt
