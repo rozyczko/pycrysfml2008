@@ -51,8 +51,8 @@ cmake --build .
 make install
 
 cd $CRYSFML08_DIST/lib
-ln -s libcrysfml.a libcrysfml08.a
-
+#ln -s libcrysfml.a libcrysfml08.a
+cp libcrysfml.a libcrysfml08.a
 
 #PyCRYSFML08 
 if [ ! -d $INSTALLATION_DIR ]; then
