@@ -73,8 +73,8 @@ fi
 echo Building CFML_Atoms
 echo "$compiler $FFLAGS -c ../../src/py_cfml_atoms.F90 -I$CRYSFML08_INCLUDE_DIR"
 $compiler $FFLAGS -c ../../src/py_cfml_atoms.F90 -I$CRYSFML08_INCLUDE_DIR
-echo "$compiler -shared -o py_cfml_atoms.so py_cfml_atoms.o -L $CRYSFML08_LIB_DIR -l CrysFML08"
-$compiler -shared -o py_cfml_atoms.so py_cfml_atoms.o -L $CRYSFML08_LIB_DIR -l CrysFML08 -L/usr/local/Cellar/python@3.8/3.8.3/Frameworks/Python.framework/Versions/3.8/lib/ -lpython3.8
+echo "$compiler -shared -o py_cfml_atoms.so py_cfml_atoms.o -L $CRYSFML08_LIB_DIR -l CrysFML08 -L/usr/local/Cellar/python@3.8/3.8.3/Frameworks/Python.framework/Versions/3.8/lib/ -lpython3.8"
+$compiler -shared -o py_cfml_atoms.so py_cfml_atoms.o -L$CRYSFML08_LIB_DIR -l CrysFML08 -L/usr/local/Cellar/python@3.8/3.8.3/Frameworks/Python.framework/Versions/3.8/lib/config-3.8-darwin -lpython3.8
 mv py_cfml_atoms.so $INSTALLATION_DIR
 
 echo Building CFML_DiffPatt
