@@ -7,8 +7,7 @@ set(PYCRYSFML08_SOURCES
     py_cfml_profiles.F90
     py_cfml_reflections.F90
     py_cfml_structure_factors.F90
-    py_cfml_sxtal_geom.f90
-    py_cfml_vtk.F90
+    py_cfml_sxtal_geom.F90
     )
 
 add_library(pycrysfml08 SHARED ${PYCRYSFML08_SOURCES})
