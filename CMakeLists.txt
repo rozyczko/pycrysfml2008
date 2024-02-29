@@ -1,5 +1,14 @@
+#################################
+# Project section
+#################################
+
+# The minimum version number insuring a correct build.
 cmake_minimum_required(VERSION 3.1.0 FATAL_ERROR)
 
+# Set the a verbose make.
+set(CMAKE_VERBOSE_MAKEFILE ON)
+
+# Set the Fortran Compiler
 if(DEFINED CMAKE_Fortran_COMPILER)
     set(CMAKE_Fortran_COMPILER ${CMAKE_Fortran_COMPILER} CACHE STRING "The Fortran compiler. One of 'ifort' or 'gfortran'.")
 else()
