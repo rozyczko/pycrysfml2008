@@ -17,3 +17,4 @@ if %STATUS% neq 0 (
     exit %STATUS%
 )
 
+move %CI_PROJECT_DIR%pycrysfml08\__init__.py %CI_PROJECT_DIR%\pycrysfml08_dist\pycrysfml08\__init__.py

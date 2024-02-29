@@ -55,7 +55,7 @@ make:job-windows:       # This job runs in the build stage, which runs first.
   artifacts:
     name: "PyCrysfml08 Windows Python3.6"
     paths:
-      - "%CI_PROJECT_DIR%\\pycrysfml08"
+      - "%CI_PROJECT_DIR%\\pycrysfml08\\pycrysml08_dist\\pycrysml08"
     when: on_success
 
 
