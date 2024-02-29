@@ -123,3 +123,11 @@ make:linux_gfortran_focal:
       - "${CI_PROJECT_DIR}/pycrysfml08_dist"
     when: on_success
 
+make:macos_ifort:
+  stage: make
+  script:
+    - source /opt/intel/oneapi/setvars.sh
+    - BuildServer/build_linux.sh ifort
+  tags:
+    - sci
+    - osx-10.13
