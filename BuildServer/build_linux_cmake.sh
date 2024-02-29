@@ -67,6 +67,8 @@ cd $CI_PROJECT_DIR
 mkdir build
 cd build
 cmake -D CMAKE_POSITION_INDEPENDENT_CODE=ON -D ARCH32=OFF -D PYTHON_API=OFF -D CMAKE_BUILD_TYPE=Debug -D CMAKE_Fortran_COMPILER=$compiler -D CMAKE_INSTALL_PREFIX=${INSTALLATION_DIR} ..
+cmake --build
+make install
 
 mv $CI_PROJECT_DIR/pycrysfml08/__init__.py $INSTALLATION_DIR/pycrysfml08/.
 rmdir $CI_PROJECT_DIR/pycrysfml08
